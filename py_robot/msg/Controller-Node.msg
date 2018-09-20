@@ -1,4 +1,4 @@
 bool on_off_lidar
 string dir
-int8 vel
+char vel
 string prolog
