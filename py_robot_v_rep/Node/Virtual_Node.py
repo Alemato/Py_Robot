@@ -2,13 +2,14 @@
 
 from librerie import *
 import numpy as np
-import matplotlib.pyplot as mlp
 import time
+import rospy
+
 
 oggetti = []
 oggettires = []
-nomioggetti = ['Proximity_sensorCE', 'Proximity_sensorDX', 'Proximity_sensorSX', 'Lidar', 'MV_Camera',
-               'Pi_Camera', 'Motore_AD', 'Motore_AS', 'Motore_PD', 'Motore_PS', 'Rover_Py_Robot']
+nomioggetti = ['Proximity_sensorCE', 'Proximity_sensorDX', 'Proximity_sensorSX', 'Micro_SX', 'Micro_DX', 'Micro_CE', 'Lidar', 'MV_Camera',
+               'Pi_Camera', 'Motore_AD', 'Motore_AS', 'Motore_PD', 'Motore_PS']
 flagstate = True
 
 
@@ -28,14 +29,14 @@ def connessione():
 
 
 def objectoggetti(connessione):
-    for i in range(0, 11):
+    for i in range(0, 13):
         res, mario = simxGetObjectHandle(connessione, nomioggetti[i], simx_opmode_blocking)
-        if i < 3:
+        if i < 6:
             simxReadProximitySensor(connessione, mario, simx_opmode_streaming)
-        elif i < 4:
+        elif i < 7:
             simxReadProximitySensor(connessione, mario, simx_opmode_streaming)
             simxGetObjectOrientation(connessione, mario, sim_handle_parent, simx_opmode_streaming)
-        elif i < 6:
+        elif i < 9:
             simxGetVisionSensorImage(connessione, mario, 0, simx_opmode_streaming)
         if not res == 0:
             print ("Creation Error")
@@ -60,11 +61,6 @@ def immagine(connessione, handle):
     return img
 
 
-def creahandle(conessione, nomioggetti):
-    res, mario = simxGetObjectHandle(connessione, nomioggetti, simx_opmode_blocking)
-    return mario
-
-
 def angololidar(connessione):
     returnCode, number = simxGetObjectOrientation(connessione, oggetti[3], sim_handle_parent, simx_opmode_buffer)
     print number
@@ -84,10 +80,59 @@ def lidar(connessione, lidar, corangolo):
     return angolo
 
 
-clientID = connessione()
-print(objectoggetti(clientID))
-print (readproximity(clientID, oggetti[3]))
-for i in range(0, 89):
-    print (lidar(clientID, oggetti[3], +1.0))
-for i in range(0, 179):
-    print (lidar(clientID, oggetti[3], -1.0))
+def micro(connessione, micros):
+    stati = []
+    for Micro in micros:
+        ris, stato, coordinate, handleoggettoris, vettorenormalizzato = simxReadProximitySensor(connessione, Micro, simx_opmode_buffer)
+        stati.append(stato)
+    return stati
+
+
+def forward(connessione, motors, velocita):
+    ris1 = simxSetJointTargetVelocity(connessione, motors[3], velocita, simx_opmode_oneshot_wait)
+    ris2 = simxSetJointTargetVelocity(connessione, motors[1], velocita, simx_opmode_oneshot_wait)
+    ris3 = simxSetJointTargetVelocity(connessione, motors[2], velocita, simx_opmode_oneshot_wait)
+    ris4 = simxSetJointTargetVelocity(connessione, motors[0], velocita, simx_opmode_oneshot_wait)
+    return ris1, ris2, ris3, ris4
+
+
+def backward(connessione, motors, velocita):
+    ris1 = simxSetJointTargetVelocity(connessione, motors[3], -velocita, simx_opmode_oneshot_wait)
+    ris2 = simxSetJointTargetVelocity(connessione, motors[1], -velocita, simx_opmode_oneshot_wait)
+    ris3 = simxSetJointTargetVelocity(connessione, motors[2], -velocita, simx_opmode_oneshot_wait)
+    ris4 = simxSetJointTargetVelocity(connessione, motors[0], -velocita, simx_opmode_oneshot_wait)
+    return ris1, ris2, ris3, ris4
+
+
+def left(connessione, motors):
+    ris1 = simxSetJointTargetVelocity(connessione, motors[0], +2, simx_opmode_oneshot_wait)
+    ris2 = simxSetJointTargetVelocity(connessione, motors[1], -2, simx_opmode_oneshot_wait)
+    ris3 = simxSetJointTargetVelocity(connessione, motors[2], +2, simx_opmode_oneshot_wait)
+    ris4 = simxSetJointTargetVelocity(connessione, motors[3], -2, simx_opmode_oneshot_wait)
+    return ris1, ris2, ris3, ris4
+
+
+def right(connessione, motors):
+    ris1 = simxSetJointTargetVelocity(connessione, motors[0], -2, simx_opmode_oneshot_wait)
+    ris2 = simxSetJointTargetVelocity(connessione, motors[1], +2, simx_opmode_oneshot_wait)
+    ris3 = simxSetJointTargetVelocity(connessione, motors[2], -2, simx_opmode_oneshot_wait)
+    ris4 = simxSetJointTargetVelocity(connessione, motors[3], +2, simx_opmode_oneshot_wait)
+    return ris1, ris2, ris3, ris4
+
+
+
+# for i in range(0, 89):
+#     print (lidar(clientID, oggetti[3], +1.0))
+# for i in range(0, 179):
+#     print (lidar(clientID, oggetti[3], -1.0))
+# micros = [oggetti[3], oggetti[4], oggetti[5]]
+# print (micro(clientID,micros))
+# motor = [oggetti[9], oggetti[10], oggetti[11], oggetti[12]]
+# print (left(clientID, motor))
+
+def main():
+    clientID = connessione()
+    objectoggetti(clientID)
+
+
+main()
