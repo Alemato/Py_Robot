@@ -1,2 +1,2 @@
-int64[3] sensori
+float64[3] sonar
 float32 volt
