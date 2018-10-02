@@ -64,8 +64,8 @@ def callback(msg, args):
     r = args[1]
     clientID = args[2]
     while not rospy.is_shutdown():
-        lidar_pub.lidar =
-        lidar_pub.volt = readvolt(12)
+        #lidar_pub.lidar =
+        #lidar_pub.volt = readvolt(12)
         lidar_pub.publish(lidar_pub.sonar, lidar_pub.volt)
         r.sleep()
 
