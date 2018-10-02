@@ -1,3 +1,15 @@
 bool on_off_lidar
-string vel
-string prolog
+string domanda
+string comando
+bool[3] switch
+float64[3] sonar
+float32 volt
+float32[2] lidar
+int16 angle16
+int8 angle8
+int16 pitch
+int16 roll
+int16[6] mag
+int16[6] acc
+int16[6] gyro
+int16 temp

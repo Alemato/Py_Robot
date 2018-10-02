@@ -53,7 +53,7 @@ add_message_files(
    Controller_Node.msg
    Lidar_Compass_Node.msg
    Motor_Switch_Node.msg
-   Prolog_Node.msg
+   Prolog_IA_Node.msg
    Sonar_Volt_Node.msg
 #   Message2.msg
 )
