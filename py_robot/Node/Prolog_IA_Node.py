@@ -23,8 +23,8 @@ def callback(msg):
     gyro = msg.gyro
     temp = msg.temp
     prolog = pyswip.Prolog()
-    prolog.assertz("sonar(centro, " + str(sonar[1]) + ")")
     prolog.assertz("sonar(sinistra, " + str(sonar[0]) + ")")
+    prolog.assertz("sonar(centro, " + str(sonar[1]) + ")")
     prolog.assertz("sonar(destra, " + str(sonar[2]) + ")")
     prolog.assertz("volt(" + str(volt) + ")")
     prolog.assertz("angolo16(" + str(angle16) + ")")
