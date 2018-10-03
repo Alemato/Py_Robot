@@ -9,7 +9,6 @@ prolog_pub = PyRobot.Prolog_IA_Node()
 
 
 def callback(msg):
-    # Creazione variabili ambientali
     domanda = msg.domanda
     switch = msg.switch
     sonar = msg.sonar
@@ -28,6 +27,7 @@ def callback(msg):
     prolog = pyswip.Prolog()
 
     # Creazione sentenze
+
     prolog.assertz("sonar(sinistra, " + str(sonar[0]) + ")")
     prolog.assertz("sonar(centro, " + str(sonar[1]) + ")")
     prolog.assertz("sonar(destra, " + str(sonar[2]) + ")")
@@ -60,8 +60,18 @@ def callback(msg):
     prolog.assertz("temp(" + str(temp) + ")")
 
     # Creazione regole
+
+    prolog.assertz("command(1, dritto)")
+    prolog.assertz("commnad(2, destra)")
+    prolog.assertz("command(3, sinistra)")
+    prolog.assertz("commnad(4, indietro)")
+    prolog.assertz("command(5, stop)")
+
     prolog.assertz(
         "sonar(Y) :- sonar(destra, A), sonar(centro, B), sonar(sinistra, C), D is max(A, B), X is max(D, C), sonar(Y, X)")
+
+    prolog.assertz("command(X):- switch(_,0), volt(Y), Y > 11, C is 1, command(C,X),!. ")
+    prolog.assertz("command(X):- switch(_,1), volt(Y), Y > 11, C is 4, command(C,X),!.")
 
 
 def main():

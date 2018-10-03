@@ -1,6 +1,6 @@
 bool on_off_lidar
-string domanda
-string comando
+string qrcode
+string fotocamera
 bool[3] switch
 float64[3] sonar
 float32 volt
