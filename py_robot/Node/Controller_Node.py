@@ -96,6 +96,7 @@ def main():
 
     r = rospy.Rate(1)
 
+    lidar_compass.__dict__
     while not rospy.is_shutdown():
         # controller_msg.velo = prolog_sub  # messaggio per il nodo Motor_Switch
         # controller_msg.switch = switch_sub  # messaggio per il nodo Prolog per switch
