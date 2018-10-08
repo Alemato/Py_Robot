@@ -55,6 +55,7 @@ add_message_files(
    Motor_Switch_Node.msg
    Prolog_IA_Node.msg
    Sonar_Volt_Node.msg
+   MV_Camera_Node.msg
 #   Message2.msg
 )
 
