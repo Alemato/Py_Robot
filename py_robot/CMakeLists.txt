@@ -56,6 +56,7 @@ add_message_files(
    Prolog_IA_Node.msg
    Sonar_Volt_Node.msg
    MV_Camera_Node.msg
+   Py_Camera_Node.msg
 #   Message2.msg
 )
 
