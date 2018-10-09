@@ -4,19 +4,29 @@ import rospy
 import py_robot.msg as PyRobot
 
 controller_msg = PyRobot.Controller_Node()
-global angle16, angle8, pitch, roll, mag, acc, gyro, temp, lidar
+global angle16, angle8, pitch, roll, mag, acc, gyro, temp, lidar, comando, switch, sonar, volt, eureca, qrcode, on_of_lidar, visione
 
 angle16 = None
 angle8 = None
 pitch = None
 roll = None
-mag = [None for x in range(0, 5)]
-acc = [None for x in range(0, 5)]
-gyro = [None for x in range(0, 5)]
+mag = [None for x in range(0, 6)]
+acc = [None for x in range(0, 6)]
+gyro = [None for x in range(0, 6)]
 temp = None
-lidar = [None for x in range(0, 180)]
+lidar = [None for x in range(0, 181)]
+comando = None
+switch = [0 for x in range(0, 3)]
+sonar = [None for x in range(0, 3)]
+volt = None
+eureca = None
+qrcode = 0
+on_of_lidar = False
+visione = None
+
 
 def callback_prolog(msg):
+    global comando
     comando = ""
     risposta_prolog = msg.risposta
     if risposta_prolog == 'dritto':
@@ -29,20 +39,23 @@ def callback_prolog(msg):
         comando = "i"
     elif risposta_prolog == 'stop':
         comando = "s"
-    else:
-        rospy.loginfo(risposta_prolog + 'message error')
-    return comando
+    elif risposta_prolog == 'correzione_destra':    # da rivedere e aggiungere gli altri comandi
+        comando = ""
+    elif risposta_prolog == 'correzione_destra':
+        comando = ""
+    elif risposta_prolog == 'fine':
+        comando = ""
 
 
 def callback_switch(msg):
+    global switch
     switch = msg.switch
-    return switch
 
 
 def callback_sonar_volt(msg):
+    global sonar, volt
     sonar = msg.sonar
     volt = msg.volt
-    return sonar, volt
 
 
 def callback_lidar_compass(msg):
@@ -56,31 +69,33 @@ def callback_lidar_compass(msg):
     acc = msg.acc
     gyro = msg.gyro
     temp = msg.temp
-    print("riceve", lidar, angle16, angle16,pitch, roll, mag, acc, gyro, temp)
-
-
-
 
 
 def callback_mvcamera(msg):
+    global eureca
     eureca = msg.eureca
 
+def callback_py_camera(msg):
+    global visione
+    visione = msg.visione
 
 def main():
-    global angle16, angle8, pitch, roll, mag, acc, gyro, temp, lidar
+    global angle16, angle8, pitch, roll, mag, acc, gyro, temp, lidar, comando, switch, sonar, volt, eureca, qrcode, on_of_lidar, visione
+    #inizializzazione nodo Controller
     rospy.init_node("Controller_Node")
+    #inizializzazioni Publisher e Subsciber
     controller_pub = rospy.Publisher("motor_pub", PyRobot.Controller_Node, queue_size=1)
-    # prolog_sub = rospy.Subscriber("prolog_sub", PyRobot.Prolog_Node, callback_prolog)
-    # switch_sub = rospy.Subscriber("switch_sub", PyRobot.Motor_Switch_Node, callback_switch)
-    # sonar_sub, volt_sub = rospy.Subscriber("sonar_volt", PyRobot.Sonar_Volt_Node, callback_sonar_volt)
-    # mv_camera = rospy.Subscriber("mv_camera", PyRobot.MV_Camera_Node, callback_mvcamera)
-    #lidar_compass_sub = rospy.Subscriber("sonar_volt", PyRobot.Lidar_Compass_Node, callback_lidar_compass)
-
-    r = rospy.Rate(1)
+    rospy.Subscriber("prolog_sub", PyRobot.Prolog_Node, callback_prolog)
+    rospy.Subscriber("switch_sub", PyRobot.Motor_Switch_Node, callback_switch)
+    rospy.Subscriber("sonar_volt", PyRobot.Sonar_Volt_Node, callback_sonar_volt)
+    rospy.Subscriber("mv_camera", PyRobot.MV_Camera_Node, callback_mvcamera)
+    rospy.Subscriber("sonar_volt", PyRobot.Lidar_Compass_Node, callback_lidar_compass)
     rospy.Subscriber("lidar_compass", PyRobot.Lidar_Compass_Node, callback_lidar_compass)
+    rospy.Subscriber("py_camera", PyRobot.Py_Camera_Node, callback_py_camera)
+    r = rospy.Rate(1)
     while not rospy.is_shutdown():
-        if angle8 is not None:
-            controller_msg.lidar = lidar
+        if angle16 is not None and angle8 is not None and pitch is not None and roll is not None and mag is not None and acc is not None and gyro is not None and temp is not None and comando is not None and volt is not None and sonar is not None:
+            controller_msg.lidar = lidar  # messaggio per il nodo Prolog per distanze lidar
             controller_msg.angle16 = angle16  # messaggio per il nodo Prolog per angle16
             controller_msg.angle8 = angle8  # messaggio per il nodo Prolog per angle8
             controller_msg.pitch = pitch  # messaggio per il nodo Prolog per pitch
@@ -89,12 +104,22 @@ def main():
             controller_msg.acc = acc  # messaggio per il nodo Prolog per acc
             controller_msg.gyro = gyro  # messaggio per il nodo Prolog per gyro
             controller_msg.temp = temp  # messaggio per il nodo Prolog per temp
-            print("___")
-            print("invia ", lidar, angle16, angle16, pitch, roll, mag, acc, gyro, temp)
-            print("___")
+            controller_msg.switch = switch  # messaggio per il nodo Prolog per switch
+            controller_msg.velo = comando  # messaggio per il nodo Motor_Switch per Motor
+            controller_msg.volt = volt  # messaggio per il nodo Prolog per volt
+            controller_msg.sonar = sonar  # messaggio per il nodo Prolog per sonar
+            controller_msg.on_off_lidar = on_of_lidar  # messaggio per il nodo Lidar_compass per Lidar  1 = parti
+            controller_msg.visione = visione   # messaggio per il nodo Prolog per Py Camera
+            if eureca == 'trovato':
+                controller_msg.qrcode = 1           # messaggio per il nodo Prolog per qrcode
+
+            if comando == 'stop':                   # qrcode dal nodo MVCamera
+                controller_msg.on_off_lidar = True
+
             controller_pub.publish(controller_msg)
             rospy.loginfo(controller_msg)
             r.sleep()
+
 
 if __name__ == '__main__':
     try:
