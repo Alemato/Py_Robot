@@ -96,31 +96,8 @@ def callback_pi_camera(msg):
     visione = msg.visione
 
 
-def notNone():
-    global angle16, angle8, pitch, roll, mag, acc, gyro, temp, lidar18, comando, switch, sonar, volt, eureca, qrcode, on_of_lidar, visione
-    notnone = 'waith'
-    if angle16 is not None:
-        if angle8 is not None:
-            if pitch is not None:
-                if roll is not None:
-                    if mag is not None:
-                        if acc is not None:
-                            if gyro is not None:
-                                if temp is not None:
-                                    if lidar18 is not None:
-                                        if comando is not None:
-                                            if switch is not None:
-                                                if sonar is not None:
-                                                    if volt is not None:
-                                                        if eureca is not None:
-                                                            if qrcode is not None:
-                                                                if on_of_lidar is not None:
-                                                                        notnone = 'go'
-                                                                        return notnone
-    return notnone
-
-
-
+def ifNotNone( angle16, angle8, pitch, roll, mag, acc, gyro, temp, comando, volt, sonar):
+    return angle16 is not None and angle8 is not None and pitch is not None and roll is not None and mag is not None and acc is not None and gyro is not None and temp is not None and comando is not None and volt is not None and sonar is not None
 
 
 def main():
@@ -137,8 +114,7 @@ def main():
     rospy.Subscriber("pi_camera_sub", PyRobot.Pi_Camera_Node, callback_pi_camera)
     r = rospy.Rate(1)
     while not rospy.is_shutdown():
-        #if angle16 is not None and angle8 is not None and pitch is not None and roll is not None and mag is not None and acc is not None and gyro is not None and temp is not None and comando is not None and volt is not None and sonar is not None:
-        if notNone() == 'go':
+        if ifNotNone(angle16, angle8, pitch, roll, mag, acc, gyro, temp, comando, volt, sonar):
             controller_msg.lidar = lidar18  # messaggio per il nodo Prolog per distanze lidar
             controller_msg.angle16 = angle16  # messaggio per il nodo Prolog per angle16
             controller_msg.angle8 = angle8  # messaggio per il nodo Prolog per angle8
