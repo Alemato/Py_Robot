@@ -4,7 +4,7 @@ string fotocamera
 bool[3] switch
 float64[3] sonar
 float32 volt
-float32[2] lidar
+float32[19] lidar
 int16 angle16
 int8 angle8
 int16 pitch
@@ -14,3 +14,4 @@ int16[6] acc
 int16[6] gyro
 int16 temp
 string velo
+string visione
