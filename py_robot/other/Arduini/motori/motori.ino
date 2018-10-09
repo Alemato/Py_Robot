@@ -1,196 +1,159 @@
-/*
- *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
- - Seguiamo i collegamenti come descritti nel sorgente in quanto i pin di abilitiazione dei pwm in arduino -
- * sono specifici.                                                                                         *
- - Nel dettaglio sono i pin: 11 10 9 6 5 3, o comunque quelli con una tilde disegnata.                     -
- * Per questo motivo le abilitazioni dei motori, che devono essere in PWM (a meno di motori passo passo),  *
- - devono essere collegate nei pin illustrati sopra.                                                       -
- *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
- */
+#include <L298N.h>
 
-int ENAr = 11; //pin PWM
-int IN1r = 12;
-int IN2r = 13;
-int IN3r = 8;
-int IN4r = 9;
-int ENBr = 10; //pin PWM
+#include <ros.h>
+#include <ArduinoHardware.h>
+#include <py_robot/Motor_Switch_Node.h>
+#include <py_robot/Controller_Node.h>
 
-int ENAl = 6; //pin PWM
-int IN1l = 7;
-int IN2l = 2;
-int IN3l = 4;
-int IN4l = 3;
-int ENBl = 5; //pin PWM
+ros::NodeHandle nh;
 
-int speedhighM = 255;
-int speedM = 200; // velocità motori (min 120 max 255, gap compreso)
-int velM = 13; // fattore moltiplicativo 
-int speedlowM = 150;
-int rot90 = 140;
-
-void direction(boolean dir) {
-  if (dir) {
-    digitalWrite(IN1r, 0);
-    digitalWrite(IN2r, 1);
-    digitalWrite(IN3r, 0);
-    digitalWrite(IN4r, 1);  
-    digitalWrite(IN1l, 0);
-    digitalWrite(IN2l, 1);
-    digitalWrite(IN3l, 0);
-    digitalWrite(IN4l, 1);      
-  } else {
-    digitalWrite(IN1r, 1);
-    digitalWrite(IN2r, 0);
-    digitalWrite(IN3r, 1);
-    digitalWrite(IN4r, 0);  
-    digitalWrite(IN1l, 1);
-    digitalWrite(IN2l, 0);
-    digitalWrite(IN3l, 1);
-    digitalWrite(IN4l, 0);    
-  }
-}
-
-void motors(int a, int b, int c, int d) {
-    analogWrite(ENAr, a); // Attiva il motore A destro
-    analogWrite(ENBr, b); // Attiva il motore B destro   
-    analogWrite(ENAl, c); // Attiva il motore A sinistro
-    analogWrite(ENBl, d); // Attiva il motore B sinistro
-}
-
-void forward (int value) { 
-  halt();
-  if (value>=0 && value<10) {
-    direction(true); // forward
-    speedM = 138+velM*value;
-    motors(speedM, speedM, speedM, speedM);
-  }
-}
-
-void forward1left (void) { 
-  halt();
-  direction(true);
-  motors(speedhighM, speedhighM, 0, speedhighM);
-}
-
-void forward1right (void) {
-  halt();
-  direction(true);
-  motors(speedhighM, 0, speedhighM, speedhighM);
-}
-
-void left90 (void) {
-  halt();
-  digitalWrite(IN1r, 0);
-  digitalWrite(IN2r, 1);
-  digitalWrite(IN3r, 0);
-  digitalWrite(IN4r, 1);  
-  digitalWrite(IN1l, 1);
-  digitalWrite(IN2l, 0);
-  digitalWrite(IN3l, 1);
-  digitalWrite(IN4l, 0);
-  analogWrite(ENAr, speedhighM); 
-  analogWrite(ENBr, 0);   
-  analogWrite(ENAl, speedhighM); 
-  analogWrite(ENBl, speedhighM); 
-  delay (rot90);
-  halt();
-}
-
-void right90 (void) { 
-  halt();
-  digitalWrite(IN1r, 1);
-  digitalWrite(IN2r, 0);
-  digitalWrite(IN3r, 1);
-  digitalWrite(IN4r, 0);
-  digitalWrite(IN1l, 0);
-  digitalWrite(IN2l, 1);
-  digitalWrite(IN3l, 0);
-  digitalWrite(IN4l, 1);
-  analogWrite(ENAr, speedhighM); 
-  analogWrite(ENBr, speedhighM);    
-  analogWrite(ENAl, 0); 
-  analogWrite(ENBl, speedhighM); 
-  delay (rot90);
-  halt();
-}
-
-void backSlow(void){
-  halt();
-  direction(false);
-  motors(speedlowM, speedlowM, speedlowM, speedlowM);
-}
- 
-
-void halt(void) { 
-  digitalWrite(IN1r, 0);
-  digitalWrite(IN2r, 0);
-  digitalWrite(IN3r, 0);
-  digitalWrite(IN4r, 0);
-  digitalWrite(IN1l, 0);
-  digitalWrite(IN2l, 0);
-  digitalWrite(IN3l, 0);
-  digitalWrite(IN4l, 0);
-  motors(0,0,0,0);
-} 
-
-void setup(){
-  pinMode(ENAr, OUTPUT);
-  pinMode(ENBr, OUTPUT);
-  pinMode(IN1r, OUTPUT);
-  pinMode(IN2r, OUTPUT);
-  pinMode(IN3r, OUTPUT);
-  pinMode(IN4r, OUTPUT);
-  
-  pinMode(ENAl, OUTPUT);
-  pinMode(ENBl, OUTPUT);
-  
-  pinMode(IN1l, OUTPUT);
-  pinMode(IN2l, OUTPUT);
-  pinMode(IN3l, OUTPUT);
-  pinMode(IN4l, OUTPUT);
-  
-  analogWrite(ENAr,0); // blocca il motore A destro
-  analogWrite(ENBr,0); // blocca il motore B destro
-  
-  analogWrite(ENAl,0); // blocca il motore A sinistro
-  analogWrite(ENBl,0); // blocca il motore B sinistro
-
-  Serial.begin(9600); // setto la speedM della trasmissione seriale 
-  delay (3000);
-  Serial.println("\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
-  Serial.println("4 wheels drive rover by IRSLab @ UnivAQ");
-  Serial.println("commands:");
-  Serial.println("a b c d e f g h i j: forward speed levels");
-  Serial.println("l r: turn left or right");
-  Serial.println("w z: forward with a long turn left(w) or right(z)");
-  Serial.println(". : slow back");
-  Serial.println("space : HALT");
-} 
 
 char cmd;
-char value;
+int vel;
 
-void loop(){
-  if (Serial.available() > 0) {
-      cmd = Serial.read(); //leggo dalla seriale
-      char choise = cmd;
-      switch(choise){
-        case 'a': forward(0);  break;
-        case 'b': forward(1);  break;
-        case 'c': forward(2);  break;  
-        case 'd': forward(3);  break;  
-        case 'e': forward(4);  break;  
-        case 'f': forward(5);  break;   
-        case 'g': forward(6);  break;
-        case 'h': forward(7);  break;      
-        case 'i': forward(8);  break;
-        case 'j': forward(9);  break;      
-        case 'l': left90();  break;
-        case 'r': right90();  break;
-        case 'w': forward1left();  break;
-        case 'z': forward1right();  break;
-        case '.': backSlow();  break;
-        case ' ': halt();  break;
-    }
-  }
+
+void CallBack( const py_robot::Controller_Node& velo){
+    cmd = velo.velo;
 }
+
+
+ros::Subscriber<py_robot::Controller_Node> motor_sub("velo", CallBack);
+
+py_robot::Motor_Switch_Node switches;
+ros::Publisher switch_pub("switches", &switches);
+
+
+// motori 1 e 2
+
+#define AIN1 2
+#define AIN2 4
+#define PWMA 3
+
+// motori 3 e 4
+#define BIN1 5
+#define BIN2 7
+#define PWMB 6
+
+
+// switch
+#define switchFront 8
+#define switchLeft 9
+#define switchRight 10
+
+
+
+L298N sinistra(PWMA, AIN1, AIN2, AIN1, AIN2, PWMA);
+L298N destra(PWMB, BIN1, BIN2, BIN1, BIN2, PWMB);
+
+int time_delay = 2;
+
+
+void setup() {
+
+  nh.initNode();
+  nh.advertise(switch_pub);
+  nh.subscribe(motor_sub);
+
+  //switch
+  pinMode(switchFront, INPUT);
+  pinMode(switchRight, INPUT);
+  pinMode(switchLeft, INPUT);
+
+
+}
+
+
+// funzione per switch
+long switchsensor(int switchpin){
+  if(digitalRead(switchpin) == HIGH){
+    delay(30);
+    if(digitalRead(switchpin) == HIGH){
+    return 0;
+  }}
+  return 1;
+}
+
+
+void VaiAvanti(int vel) {
+  sinistra.forward(vel, time_delay);
+  destra.forward(vel, time_delay);
+  
+  }
+
+void VaiIndietro(int vel) {
+  sinistra.backward(vel, time_delay);
+  destra.backward(vel, time_delay);
+  
+  }
+void VaiSinistra() {
+  sinistra.backward(100, 2000);
+  destra.forward(100, 2000);
+  }
+
+void VaiDestra() {
+  sinistra.forward(100, 2000);
+  destra.backward(100, 2000);
+  }
+
+
+void loop() {
+
+  
+      switch(cmd){
+        
+        case 'a': VaiAvanti(70);
+          break;      
+
+        case 'b': VaiAvanti(90);
+          break;           
+
+        case 'c': VaiAvanti(110);
+          break;    
+
+         case 'd': VaiAvanti(130);
+          break;      
+
+        case 'e': VaiAvanti(150);
+          break;  
+
+        case 'f': VaiAvanti(170);
+          break;
+
+        case 'g': VaiAvanti(190);
+          break;    
+
+         case 'h': VaiAvanti(210);
+          break;      
+
+        case 'i': VaiIndietro(80);
+          break;  
+
+        case 'l': VaiIndietro(100);
+          break;
+        
+        case 'm': VaiIndietro(150);
+          break;
+       
+        case 'o': VaiIndietro(180);
+          break;
+        
+        case 'p': VaiIndietro(210);
+          break;
+        
+        case 'q': VaiSinistra();
+          break;
+        
+        case 'r': VaiDestra();
+          break;     
+      }
+
+    //switch part
+    switches.switches[0]=switchsensor(switchFront);
+    switches.switches[1]=switchsensor(switchLeft);
+    switches.switches[2]=switchsensor(switchRight);
+
+    switch_pub.publish(&switches);
+    nh.spinOnce(); 
+    delay(10);
+    }
+ 
