@@ -79,6 +79,11 @@ def callback_py_camera(msg):
     global visione
     visione = msg.visione
 
+
+def ifNotNone( angle16, angle8, pitch, roll, mag, acc, gyro, temp, comando, volt, sonar):
+    return angle16 is not None and angle8 is not None and pitch is not None and roll is not None and mag is not None and acc is not None and gyro is not None and temp is not None and comando is not None and volt is not None and sonar is not None
+
+
 def main():
     global angle16, angle8, pitch, roll, mag, acc, gyro, temp, lidar, comando, switch, sonar, volt, eureca, qrcode, on_of_lidar, visione
     #inizializzazione nodo Controller
@@ -94,7 +99,7 @@ def main():
     rospy.Subscriber("py_camera", PyRobot.Py_Camera_Node, callback_py_camera)
     r = rospy.Rate(1)
     while not rospy.is_shutdown():
-        if angle16 is not None and angle8 is not None and pitch is not None and roll is not None and mag is not None and acc is not None and gyro is not None and temp is not None and comando is not None and volt is not None and sonar is not None:
+        if ifNotNone(angle16, angle8, pitch, roll, mag, acc, gyro, temp, comando, volt, sonar):
             controller_msg.lidar = lidar  # messaggio per il nodo Prolog per distanze lidar
             controller_msg.angle16 = angle16  # messaggio per il nodo Prolog per angle16
             controller_msg.angle8 = angle8  # messaggio per il nodo Prolog per angle8
