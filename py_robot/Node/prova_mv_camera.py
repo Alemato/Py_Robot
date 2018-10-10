@@ -12,7 +12,7 @@ def main():
     mv_camera_pub = rospy.Publisher("mv_camera_sub", PyRobot.MV_Camera_Node, queue_size=1)
     r = rospy.Rate(5)
     while not rospy.is_shutdown():
-        mv_camera.eureca = random.choice('dritto', 'destra', 'sinistra')
+        mv_camera.eureca = 'trovato'
         mv_camera_pub.publish(mv_camera)
         r.sleep()
 

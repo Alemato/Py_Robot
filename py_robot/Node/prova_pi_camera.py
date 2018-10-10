@@ -13,7 +13,7 @@ def main():
     pi_camera_pub = rospy.Publisher("pi_camera_sub", PyRobot.Pi_Camera_Node, queue_size=1)
     r = rospy.Rate(5)
     while not rospy.is_shutdown():
-        pi_camera.visione = random.choice('dritto', 'destra', 'sinistra')
+        pi_camera.visione = random.choice(['dritto', 'destra', 'sinistra'])
         pi_camera_pub.publish(pi_camera)
         r.sleep()
 
