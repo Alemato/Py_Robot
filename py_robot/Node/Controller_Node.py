@@ -5,7 +5,7 @@ import numpy
 import py_robot.msg as PyRobot
 
 controller_msg = PyRobot.Controller_Node()
-global angle16, angle8, pitch, roll, mag, acc, gyro, temp, lidar18, comando, switch, sonar, volt, eureca, qrcode, on_of_lidar, visione
+global angle16, angle8, pitch, roll, mag, acc, gyro, temp, lidar18, comando, switch, sonar, volt, eureca, visione
 
 angle16 = None
 angle8 = None
@@ -17,13 +17,31 @@ gyro = [None for x in range(0, 6)]
 temp = None
 lidar18 = [None for x in range(0, 180)]
 comando = None
-switch = [0 for x in range(0, 3)]
+switch = [None for x in range(0, 3)]
 sonar = [None for x in range(0, 3)]
 volt = None
 eureca = None
-qrcode = 0
-on_of_lidar = False
 visione = None
+
+
+def resetvar():
+    global angle16, angle8, pitch, roll, mag, acc, gyro, temp, lidar18, comando, switch, sonar, volt, eureca, visione
+
+    angle16 = None
+    angle8 = None
+    pitch = None
+    roll = None
+    mag = [None for x in range(0, 6)]
+    acc = [None for x in range(0, 6)]
+    gyro = [None for x in range(0, 6)]
+    temp = None
+    lidar18 = [None for x in range(0, 180)]
+    comando = None
+    switch = [None for x in range(0, 3)]
+    sonar = [None for x in range(0, 3)]
+    volt = None
+    eureca = None
+    visione = None
 
 
 def callback_prolog(msg):
@@ -45,14 +63,13 @@ def callback_prolog(msg):
     elif risposta_prolog == 'correzione_destra':
         comando = ""
     elif risposta_prolog == 'fine':
-        comando = ""
+        endfunction()
 
 
 def endfunction():
     global comando
     comando = 'stop'
-
-
+    rospy.signal_shutdown('Mission Complete')
 
 
 def callback_switch(msg):
@@ -86,6 +103,7 @@ def dividilista(lista):
     listamedia = listamedia.tolist()
     return listamedia
 
+
 def callback_mvcamera(msg):
     global eureca
     eureca = msg.eureca
@@ -96,14 +114,15 @@ def callback_pi_camera(msg):
     visione = msg.visione
 
 
-def ifNotNone( angle16, angle8, pitch, roll, mag, acc, gyro, temp, comando, volt, sonar):
+def ifNotNone(angle16, angle8, pitch, roll, mag, acc, gyro, temp, comando, volt, sonar):
     return angle16 is not None and angle8 is not None and pitch is not None and roll is not None and mag is not None and acc is not None and gyro is not None and temp is not None and comando is not None and volt is not None and sonar is not None
 
 
 def main():
-    global angle16, angle8, pitch, roll, mag, acc, gyro, temp, lidar18, comando, switch, sonar, volt, eureca, qrcode, on_of_lidar, visione
+    global angle16, angle8, pitch, roll, mag, acc, gyro, temp, lidar18, comando, switch, sonar, volt, eureca, visione
+    resetvar()
     # inizializzazione nodo Controller
-    rospy.init_node("Controller_Node")
+    rospy.init_node("Controller_Node", disable_signals=True)
     # inizializzazioni Publisher e Subsciber
     controller_pub = rospy.Publisher("controller_pub", PyRobot.Controller_Node, queue_size=1)
     rospy.Subscriber("prolog_sub", PyRobot.Prolog_Node, callback_prolog)
@@ -128,18 +147,18 @@ def main():
             controller_msg.velo = comando  # messaggio per il nodo Motor_Switch per Motor
             controller_msg.volt = volt  # messaggio per il nodo Prolog per volt
             controller_msg.sonar = sonar  # messaggio per il nodo Prolog per sonar
-            controller_msg.on_off_lidar = on_of_lidar  # messaggio per il nodo Lidar_compass per Lidar  1 = parti
             controller_msg.visione = visione  # messaggio per il nodo Prolog per Py Camera
 
             if eureca == 'trovato':
-                controller_msg.qrcode = 1           # messaggio per il nodo Prolog per qrcode
+                controller_msg.qrcode = 1  # messaggio per il nodo Prolog per qrcode
 
-            if comando == 'stop':                   # qrcode dal nodo MVCamera
+            if comando == 'stop':  # qrcode dal nodo MVCamera
                 controller_msg.on_off_lidar = True
 
             controller_pub.publish(controller_msg)
             rospy.loginfo(controller_msg)
             r.sleep()
+            resetvar()
 
 
 if __name__ == '__main__':
