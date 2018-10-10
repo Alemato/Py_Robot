@@ -68,7 +68,7 @@ def callback_prolog(msg):
 
 def endfunction():
     global comando
-    comando = 'stop'
+    comando = 'stop'                             # da rivedere
     rospy.signal_shutdown('Mission Complete')
 
 
