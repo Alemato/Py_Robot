@@ -48,6 +48,13 @@ def callback_prolog(msg):
         comando = ""
 
 
+def endfunction():
+    global comando
+    comando = 'stop'
+
+
+
+
 def callback_switch(msg):
     global switch
     switch = msg.switch
@@ -62,7 +69,7 @@ def callback_sonar_volt(msg):
 def callback_lidar_compass(msg):
     global angle16, angle8, pitch, roll, mag, acc, gyro, temp, lidar18
     lidar = msg.lidar
-    lidar18 = dividilista(lidar, 18)
+    lidar18 = dividilista(lidar)
     angle16 = msg.angle16
     angle8 = msg.angle8
     pitch = msg.pitch
@@ -73,18 +80,11 @@ def callback_lidar_compass(msg):
     temp = msg.temp
 
 
-def dividilista(lista, num):
-    meta = len(lista) / float(num)
-    listadivisa = []
-    ultimo = 0.0
-    while ultimo < len(lista):
-        listadivisa.append(lista[int(ultimo):int(ultimo + meta)])
-        ultimo += meta
-    listamedia = []
-    for x in range(0, 18):
-        listamedia.append(numpy.mean(listadivisa[x]))
+def dividilista(lista):
+    listadivisa = numpy.split(lista, [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170])
+    listamedia = numpy.mean(listadivisa, axis=1, dtype=numpy.float64)
+    listamedia = listamedia.tolist()
     return listamedia
-
 
 def callback_mvcamera(msg):
     global eureca
