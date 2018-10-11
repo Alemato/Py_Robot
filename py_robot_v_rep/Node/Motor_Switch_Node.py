@@ -8,6 +8,12 @@ import rospy
 
 
 switch_pub = PyRobot.Motor_Switch_Node()
+clientID = None
+oggetto = []
+micros = []
+motors = []
+stati = []
+
 
 def connessione():
     """
@@ -24,7 +30,14 @@ def connessione():
         return clientID
 
 
-def oggetti(clientID, oggetto):
+def oggetti(clientID):
+    """
+    funzione che crea gli oggetti nel modo v-rep
+    :var globale oggetto: rappresenta gli oggetti creati, e' di tipo lista
+    :param clientID: connesione v-rep
+    :return: oggetto
+    """
+    global oggetto
     nomioggetti = ['Micro_SX', 'Micro_DX', 'Micro_CE', 'Motore_AD', 'Motore_AS', 'Motore_PD', 'Motore_PS']
     for i in range(0, 7):
         res, objecthandle = simxGetObjectHandle(clientID, nomioggetti[i], simx_opmode_blocking)
@@ -40,48 +53,87 @@ def oggetti(clientID, oggetto):
 
 
 def forward(clientID, motors, velocita):
+    """
+    funzione che setta i motori per andare avanti
+    :param clientID: connesione v-rep
+    :param motors: lista degli oggetti motori del mondo v-rep
+    :param velocita: velocita' da settare ai motori
+    :return: nulla
+    """
     ris1 = simxSetJointTargetVelocity(clientID, motors[3], velocita, simx_opmode_oneshot_wait)
     ris2 = simxSetJointTargetVelocity(clientID, motors[1], velocita, simx_opmode_oneshot_wait)
     ris3 = simxSetJointTargetVelocity(clientID, motors[2], velocita, simx_opmode_oneshot_wait)
     ris4 = simxSetJointTargetVelocity(clientID, motors[0], velocita, simx_opmode_oneshot_wait)
-    return ris1, ris2, ris3, ris4
+    if ris1 > 0 or ris2 > 0 or ris3 > 0 or ris4 > 0:
+        print ("Error forward")
 
 
 def backward(clientID, motors, velocita):
+    """
+    funzione che setta i motori per andare indietro
+    :param clientID: connesione v-rep
+    :param motors: lista degli oggetti motori del mondo v-rep
+    :param velocita: velocita' da settare ai motori
+    :return: nulla
+    """
     ris1 = simxSetJointTargetVelocity(clientID, motors[3], -velocita, simx_opmode_oneshot_wait)
     ris2 = simxSetJointTargetVelocity(clientID, motors[1], -velocita, simx_opmode_oneshot_wait)
     ris3 = simxSetJointTargetVelocity(clientID, motors[2], -velocita, simx_opmode_oneshot_wait)
     ris4 = simxSetJointTargetVelocity(clientID, motors[0], -velocita, simx_opmode_oneshot_wait)
-    return ris1, ris2, ris3, ris4
+    if ris1 > 0 or ris2 > 0 or ris3 > 0 or ris4 > 0:
+        print ("Error forward")
 
 
 def left(clientID, motors):
+    """
+    funzione che setta i motori per andare a sinistra
+    :param clientID: connesione v-rep
+    :param motors: lista degli oggetti motori del mondo v-rep
+    :return: nulla
+    """
     ris1 = simxSetJointTargetVelocity(clientID, motors[0], +2, simx_opmode_oneshot_wait)
     ris2 = simxSetJointTargetVelocity(clientID, motors[1], -2, simx_opmode_oneshot_wait)
     ris3 = simxSetJointTargetVelocity(clientID, motors[2], +2, simx_opmode_oneshot_wait)
     ris4 = simxSetJointTargetVelocity(clientID, motors[3], -2, simx_opmode_oneshot_wait)
-    return ris1, ris2, ris3, ris4
+    if ris1 > 0 or ris2 > 0 or ris3 > 0 or ris4 > 0:
+        print ("Error forward")
 
 
 def right(clientID, motors):
+    """
+    funzione che setta i motori per andare a destra
+    :param clientID: connesione v-rep
+    :param motors: lista degli oggetti motori del mondo v-rep
+    :return: nulla
+    """
     ris1 = simxSetJointTargetVelocity(clientID, motors[0], -2, simx_opmode_oneshot_wait)
     ris2 = simxSetJointTargetVelocity(clientID, motors[1], +2, simx_opmode_oneshot_wait)
     ris3 = simxSetJointTargetVelocity(clientID, motors[2], -2, simx_opmode_oneshot_wait)
     ris4 = simxSetJointTargetVelocity(clientID, motors[3], +2, simx_opmode_oneshot_wait)
-    return ris1, ris2, ris3, ris4
+    if ris1 > 0 or ris2 > 0 or ris3 > 0 or ris4 > 0:
+        print ("Error forward")
 
 
-def micro(clientID, micros):
-    stati = []
+def micro(clientID):
+    """
+    funzione che rileva lo stato dei microswitch nel modo r-rep
+    :param clientID: connesione v-rep
+    :return stati: ritorna gli stati dei microswitch e' di tipo lista
+    """
+    global micros, stati
     for Micro in micros:
         ris, stato, coordinate, handleoggettoris, vettorenormalizzato = simxReadProximitySensor(clientID, Micro, simx_opmode_buffer)
         stati.append(stato)
     return stati
 
 
-def callback(msg, args):
-    clientID = args[0]
-    motors = args[1]
+def callback(msg):
+    """
+    funzione che esegue i comandi che arrivano dal controller_node
+    :param msg: messaggio ros ricevuto
+    :return: nulla
+    """
+    global clientID, motors
     if msg.vel == "a":
         forward(clientID, motors, 1)
     elif msg.vel =="b":
@@ -120,19 +172,24 @@ def callback(msg, args):
         forward(clientID, motors, 0)
 
 
-def main(oggetto=[]):
+def main():
+    global clientID, oggetto, micros, motors, stati
     clientID = connessione()
-    newoggetti = oggetti(clientID, oggetto)
+    newoggetti = oggetti(clientID)
     micros = [newoggetti[0], newoggetti[1], newoggetti[2]]
     motors = [newoggetti[3], newoggetti[4], newoggetti[5], newoggetti[6]]
     rospy.init_node("Motor_Switch_Node")
-    rospy.Subscriber("motor", PyRobot.Controller_Node, callback, (clientID, motors))
+    rospy.Subscriber("motor", PyRobot.Controller_Node, callback)
     switch_pub = rospy.Publisher("switch", PyRobot.Motor_Switch_Node, queue_size=1)
     r = rospy.Rate(1)
 
     while not rospy.is_shutdown():
-        switch_pub.switch = micro(clientID, micros)
+        microswitch = micro(clientID)
+        if microswitch[0] or microswitch[1] or microswitch[2]:
+            forward(clientID, motors, 0)
+        switch_pub.switch = microswitch
         switch_pub.publish(switch_pub.switch)
+        stati = []
         r.sleep()
 
 
