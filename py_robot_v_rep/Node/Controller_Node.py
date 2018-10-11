@@ -5,7 +5,6 @@ import numpy
 import py_robot.msg as PyRobot
 
 controller_msg = PyRobot.Controller_Node()
-# global angle16, angle8, pitch, roll, mag, acc, gyro, temp, lidar18, comando, switch, sonar, volt, eureca, visione
 
 angle16 = None
 angle8 = None
@@ -23,8 +22,11 @@ volt = None
 eureca = None
 visione = None
 
-
 def resetvar():
+    """
+    funzione per il reset delle variabili
+    :return:
+    """
     global angle16, angle8, pitch, roll, mag, acc, gyro, temp, lidar18, comando, switch, sonar, volt, eureca, visione
 
     angle16 = None
@@ -45,8 +47,13 @@ def resetvar():
 
 
 def callback_prolog(msg):
+    """
+    funzione di callback per i messaggi provenienti dal nodo Prolog_IA,
+    modifica la variabile globale comando
+    :param msg: messagio ricevuto
+    :return: nulla
+    """
     global comando
-    comando = ""
     risposta_prolog = msg.risposta
     if risposta_prolog == 'dritto':
         comando = "e"
@@ -67,23 +74,42 @@ def callback_prolog(msg):
 
 
 def endfunction():
+    """
+    funzione per la fine e il blocco della simulazione
+    :return: nulla
+    """
     global comando
     comando = 'stop'                             # da rivedere
     rospy.signal_shutdown('Mission Complete')
 
 
 def callback_switch(msg):
+    """
+    funzione di callback per i messaggi provenienti dal nodo Motor_Switch_Node
+    :param msg: messagio ricevuto
+    :return: nulla
+    """
     global switch
     switch = msg.switch
 
 
 def callback_sonar_volt(msg):
+    """
+    funzione di callback per i messaggi provenienti dal nodo Sonar_Volt_Node
+    :param msg: messagio ricevuto
+    :return:
+    """
     global sonar, volt
     sonar = msg.sonar
     volt = msg.volt
 
 
 def callback_lidar_compass(msg):
+    """
+    funzione di callback per i messaggi provenienti dal nodo Lidar_Compass_Node
+    :param msg: messagio ricevuto
+    :return:
+    """
     global angle16, angle8, pitch, roll, mag, acc, gyro, temp, lidar18
     lidar = msg.lidar
     lidar18 = dividilista(lidar)
@@ -98,6 +124,11 @@ def callback_lidar_compass(msg):
 
 
 def dividilista(lista):
+    """
+    funzione che divide in array da 10 elementi e fa la media delle 180 misure del lidar,
+    :param lista: lista delle 181 misure del lidar
+    :return listamedia: lista delle 19 misure medie (prese ogni 10 gradi)
+    """
     listadivisa = numpy.split(lista, [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170])
     listamedia = numpy.mean(listadivisa, axis=1, dtype=numpy.float64)
     listamedia = listamedia.tolist()
@@ -105,16 +136,42 @@ def dividilista(lista):
 
 
 def callback_mvcamera(msg):
+    """
+    funzione di callback per i messaggi provenienti dal nodo MV_Camera_Node
+    :param msg: messagio ricevuto
+    :return: nulla
+    """
     global eureca
     eureca = msg.eureca
 
 
 def callback_pi_camera(msg):
+    """
+    funzione di callback per i messaggi provenienti dal nodo Pi_Camer_Node
+    :param msg: messagio ricevuto
+    :return: nulla
+    """
     global visione
     visione = msg.visione
 
 
 def ifNotNone(angle16, angle8, pitch, roll, mag, acc, gyro, temp, comando, volt, sonar):
+    """
+    funzione di controlo delle variabili globali,
+    controlla se sono state modificate tutte
+    :param angle16: misura del angolo a 16
+    :param angle8: misura del angolo a 8
+    :param pitch: misura del pitch
+    :param roll: misura del roll
+    :param mag: misura del mag
+    :param acc: misura del acc
+    :param gyro: misura del gyro
+    :param temp: misura della temperatura
+    :param comando: variabile del comando da inviare
+    :param volt: misura della batteria
+    :param sonar: misura dei sonar
+    :return: True se sono modificate, False se sono ancora nulle
+    """
     return angle16 is not None and angle8 is not None and pitch is not None and roll is not None and mag is not None and acc is not None and gyro is not None and temp is not None and comando is not None and volt is not None and sonar is not None
 
 
