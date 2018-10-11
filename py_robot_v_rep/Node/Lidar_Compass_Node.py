@@ -6,6 +6,12 @@ import time
 import rospy
 import py_robot_v_rep.msg as PyRobot
 
+oggetto = []
+lidar_compass = PyRobot.Lidar_Compass_Node()
+lidarvar = None
+clientID = None
+handle = None
+
 
 def connessione():
     """
@@ -22,7 +28,14 @@ def connessione():
         return clientID
 
 
-def oggetti(clientID, oggetto):
+def oggetti(clientID):
+    """
+    funzione che crea l'oggetto lidar nel modo v-rep
+    :var globale oggetto: rappresenta l'oggetto lidar, e' di tipo lista
+    :param clientID: connesione v-rep
+    :return:
+    """
+    global oggetto
     nomioggetti = ['Lidar']
     res, objecthandle = simxGetObjectHandle(clientID, nomioggetti[0], simx_opmode_blocking)
     simxReadProximitySensor(clientID, objecthandle, simx_opmode_streaming)
@@ -37,47 +50,87 @@ def oggetti(clientID, oggetto):
 
 
 def readproximity(clientID, handle):
-    ris, stato, coordinate, handleoggettoris, vettorenormalizzato = simxReadProximitySensor(clientID, handle[0], simx_opmode_buffer)
-    distanza =np.linalg.norm(coordinate)
+    """
+    funzione che ritorna una lettura, la lettura in questo caso  e' del lidar
+    :param clientID: connessione v-rep
+    :param handle: oggetto dal quale provine la lettura
+    :return ditsanza: distanza letta
+    """
+    ris, stato, coordinate, handleoggettoris, vettorenormalizzato = simxReadProximitySensor(clientID, handle,
+                                                                                            simx_opmode_buffer)
+    if ris > 0:
+        print ("Error read proximity")
+    distanza = np.linalg.norm(coordinate)
     return distanza
 
 
-
-def angololidar(clientID):
-    returnCode, number = simxGetObjectOrientation(clientID, oggetti[3], sim_handle_parent, simx_opmode_buffer)
+def angololidar(clientID, handle):
+    """
+    funzione che ci dice l' orientamento del oggetto passato rispetto al padre nel mondo v-rep,
+    in quessto caso  e' l'orientamento del lidar rispetto il padre (corpo del rover)
+    :param clientID: connessione v-rep
+    :param handle: oggetto a qui misurare l' orientamento rispetto al padre
+    :return number: lista che contiene la rotazione rispetto ai 3 assi (misura in gradi deg)
+    """
+    returnCode, number = simxGetObjectOrientation(clientID, handle, sim_handle_parent, simx_opmode_buffer)
+    if returnCode > 0:
+        print ("Error angololidar orientation")
     number = [number[0] * 180 / np.pi, number[1] * 180 / np.pi, number[2] * 180 / np.pi]
     return number
 
 
 def lidar(clientID, lidar, corangolo):
+    """
+    funzione che esegue la lettura e lo spostamento del lidar
+    :param clientID: connesione v-rep
+    :param lidar: oggetto lidar
+    :param corangolo: angolo di spostamento/correzione del lidar per la prossima posizione
+    :return: distanza misuarata dal lidar
+    """
     angolo = angololidar(clientID)
-    angoloeleur = [(angolo[0] + corangolo)/180*np.pi, (angolo[1])/180*np.pi, angolo[2]/180*np.pi]
+    angoloeleur = [(angolo[0] + corangolo) / 180 * np.pi, (angolo[1]) / 180 * np.pi, angolo[2] / 180 * np.pi]
     ris = simxSetObjectOrientation(clientID, lidar, sim_handle_parent, angoloeleur, simx_opmode_oneshot_wait)
+    if ris > 0:
+        print ("Error lidar orientation")
     distanza = readproximity(clientID, lidar)
-    angolo = angololidar(clientID)
     time.sleep(0.1)
-    return distanza, angolo
+    return distanza
 
 
-def callback(msg, args):
-    lidar_pub = args[0]
-    r = args[1]
-    clientID = args[2]
-    while not rospy.is_shutdown():
-        #lidar_pub.lidar =
-        #lidar_pub.volt = readvolt(12)
-        lidar_pub.publish(lidar_pub.sonar, lidar_pub.volt)
-        r.sleep()
+def callback(msg):
+    """
+    funzione chiamata dalla sottoscrizione del nodo di controllo, effettua le letture
+    :param msg: messaggio ros ricevuto
+    :return: nulla
+    """
+    global lidarvar, clientID, handle
+    lidarvar[0] = lidar(clientID, handle, +89)
+    for i in range(0, 179):
+        lidarvar[i + 1] = lidar(clientID, handle, -1.0)
 
 
-def main(oggetto = []):
+def main():
+    global oggetto, clientID, handle, lidarvar
     clientID = connessione()
-    newoggetti = oggetti(clientID, oggetto)
+    handle = oggetti(clientID)
     rospy.init_node("Lidar_Compass_Node")
+    rospy.Subscriber("lidar_trigger", PyRobot.Controller_Node, callback)
     lidar_pub = rospy.Publisher("lidar_compass", PyRobot.Lidar_Compass_Node, queue_size=1)
     r = rospy.Rate(1)
-    rospy.Subscriber("lidar_trigger", PyRobot.Controller_Node, callback, (lidar_pub, r, clientID))
-
+    while not rospy.is_shutdown():
+        lidar_compass.lidar = lidarvar
+        lidar_compass.angle16 = 0
+        lidar_compass.angle8 = 0
+        lidar_compass.pitch = 0
+        lidar_compass.roll = 0
+        lidar_compass.mag = [0, 0, 0, 0, 0, 0]
+        lidar_compass.acc = [0, 0, 0, 0, 0, 0]
+        lidar_compass.gyro = [0, 0, 0, 0, 0, 0]
+        lidar_compass.temp = 24
+        lidar_pub.publish(lidar_compass)
+        rospy.loginfo(lidar_compass)
+        lidarvar = []
+        r.sleep()
 
 
 if __name__ == '__main__':
