@@ -5,6 +5,12 @@ import numpy as np
 import rospy
 import py_robot_v_rep.msg as PyRobot
 
+sonar_volt_pub = PyRobot.Sonar_Volt_Node()
+oggetto = []
+distanza = []
+clientID = None
+
+
 def connessione():
     """
     funzione per connessione
@@ -20,7 +26,14 @@ def connessione():
         return clientID
 
 
-def oggetti(clientID, oggetto):
+def oggetti(clientID):
+    """
+    funzione che crea gli oggetti nel modo v-rep
+    :var globale oggetto: rappresenta gli oggetti creati, e' di tipo lista
+    :param clientID: connesione v-rep
+    :return: oggetto
+    """
+    global oggetto
     nomioggetti = ['Proximity_sensorCE', 'Proximity_sensorDX', 'Proximity_sensorSX']
     for i in range(0, 4):
         res, objecthandle = simxGetObjectHandle(clientID, nomioggetti[i], simx_opmode_blocking)
@@ -35,7 +48,13 @@ def oggetti(clientID, oggetto):
 
 
 def readproximity(clientID, handle):
-    distanza = []
+    """
+    funzione che ritorna una lettura, la lettura in questo caso  e' dei sonar
+    :param clientID: connessione v-rep
+    :param handle: oggetto dal quale provine la lettura
+    :return ditsanza: distanza letta
+    """
+    global distanza
     ris, stato, coordinate, handleoggettoris, vettorenormalizzato = simxReadProximitySensor(clientID, handle[0], simx_opmode_buffer)
     distanza.append(np.linalg.norm(coordinate))
     ris, stato, coordinate, handleoggettoris, vettorenormalizzato = simxReadProximitySensor(clientID, handle[1],
@@ -48,20 +67,27 @@ def readproximity(clientID, handle):
 
 
 def readvolt(volt):
+    """
+    funzione che simula le letture dello statto della batteria
+    :param volt: numero che corrisponde ai volt della batteria
+    :return volt: il numero dei volt della batteria
+    """
     return volt
 
 
-def main(oggetto=[]):
+def main():
+    global oggetto, clientID, distanza
     clientID = connessione()
-    newoggetti = oggetti(clientID, oggetto)
+    newoggetti = oggetti(clientID)
     rospy.init_node("Sonar_Volt_Node")
-    switch_pub = rospy.Publisher("sonar_volt", PyRobot.Sonar_Volt_Node, queue_size=1)
+    sonar_volt_pub = rospy.Publisher("sonar_volt", PyRobot.Sonar_Volt_Node, queue_size=1)
     r = rospy.Rate(1)
 
     while not rospy.is_shutdown():
-        switch_pub.sonar = readproximity(clientID, newoggetti)
-        switch_pub.volt = readvolt(12)
-        switch_pub.publish(switch_pub.sonar, switch_pub.volt)
+        sonar_volt_pub.sonar = readproximity(clientID, newoggetti)
+        distanza = []
+        sonar_volt_pub.volt = readvolt(13)
+        sonar_volt_pub.publish(sonar_volt_pub)
         r.sleep()
 
 
