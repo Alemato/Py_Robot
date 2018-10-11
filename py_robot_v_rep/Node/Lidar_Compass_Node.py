@@ -33,7 +33,7 @@ def oggetti(clientID):
     funzione che crea l'oggetto lidar nel modo v-rep
     :var globale oggetto: rappresenta l'oggetto lidar, e' di tipo lista
     :param clientID: connesione v-rep
-    :return:
+    :return: oggetto
     """
     global oggetto
     nomioggetti = ['Lidar']

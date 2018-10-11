@@ -62,7 +62,7 @@ def immagine(connessione, handle):
 
 
 def angololidar(connessione):
-    returnCode, number = simxGetObjectOrientation(connessione, oggetti[3], sim_handle_parent, simx_opmode_buffer)
+    returnCode, number = simxGetObjectOrientation(connessione, oggetti[6], sim_handle_parent, simx_opmode_buffer)
     print number
     number = [number[0] * 180 / np.pi, number[1] * 180 / np.pi, number[2] * 180 / np.pi]
     print number
@@ -121,10 +121,15 @@ def right(connessione, motors):
 
 
 
+clientID = connessione()
+oggetti=objectoggetti(clientID)
+
 # for i in range(0, 89):
-#     print (lidar(clientID, oggetti[3], +1.0))
+#     print ("Angolo")
+#     print (lidar(clientID, oggetti[6], +1.0))
 # for i in range(0, 179):
-#     print (lidar(clientID, oggetti[3], -1.0))
+#     print ("Angolo")
+#     print (lidar(clientID, oggetti[6], -1.0))
 # micros = [oggetti[3], oggetti[4], oggetti[5]]
 # print (micro(clientID,micros))
 # motor = [oggetti[9], oggetti[10], oggetti[11], oggetti[12]]
@@ -135,4 +140,4 @@ def main():
     objectoggetti(clientID)
 
 
-main()
+# main()
