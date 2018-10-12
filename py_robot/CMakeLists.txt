@@ -57,6 +57,7 @@ add_message_files(
    Sonar_Volt_Node.msg
    MV_Camera_Node.msg
    Pi_Camera_Node.msg
+   Controller_To_Lidar_Node.msg
 #   Message2.msg
 )
 

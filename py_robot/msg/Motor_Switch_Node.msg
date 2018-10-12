@@ -1,1 +1,1 @@
-bool[3] switch
+bool[3] switches
