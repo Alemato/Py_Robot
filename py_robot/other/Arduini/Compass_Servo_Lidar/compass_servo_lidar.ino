@@ -29,8 +29,10 @@ int arraydist[181];
 #define CMPS_GET_ANGLE16 0x13
 #define CMPS_GET_PITCH 0x14
 #define CMPS_GET_ROLL 0x15
+#define CMPS_GET_MAG_RAW 0x19
 
-unsigned char high_byte, low_byte, angle8;
+
+unsigned char high_byte, low_byte, angle8, xhigh, xlow, yhigh, ylow, zhigh, zlow;
 char pitch, roll;
 unsigned int angle16;
 
@@ -84,8 +86,30 @@ void readcompass(){
   while(cmps11.available() < 1);
   roll = cmps11.read();
   
+  cmps11.write(CMPS_GET_MAG_RAW);    // Request and read roll value
+  while(cmps11.available() < 6);
+  xhigh = cmps11.read();
+  xlow = cmps11.read();
+  yhigh = cmps11.read();
+  ylow = cmps11.read();
+  zhigh = cmps11.read();
+  zlow = cmps11.read();  
+
+  
   Serial.print("roll: ");            // Display roll data
   Serial.print(roll, DEC);
+  Serial.print("mag: ");            // Display mag data
+  Serial.print(xhigh, DEC);
+  Serial.print(" ");
+  Serial.print(xlow, DEC);
+  Serial.print(" ");
+  Serial.print(yhigh, DEC);
+  Serial.print(" ");
+  Serial.print(ylow, DEC);
+  Serial.print(" ");
+  Serial.print(zhigh, DEC);
+  Serial.print(" ");
+  Serial.print(zlow, DEC);
   
   Serial.print("    pitch: ");          // Display pitch data
   Serial.print(pitch, DEC);
@@ -151,18 +175,6 @@ int readlidar2(){
 void loop() {
   Serial.println("parto");
   readcompass();
-  Serial.println("dopo sonar");
-  for (i=0; i<180; i++){
-    myservo.write(i);
-    delay(2);
-    arraydist[i]=readlidar2();
-    delay(2);
-  }
-  myservo.write(90);
-  Serial.println("dopo lidar");
-  for (i=0; i<180; i++){
-    Serial.println(arraydist[i]);
-  }
   delay(100);
 
 }
