@@ -12,7 +12,7 @@ def talker():
     rospy.init_node('talker')
     rate = rospy.Rate(10)  # 10hz
     while not rospy.is_shutdown():
-        sonar_msg.lidar = [random.randint(0, 100) * 0.1 for x in range(0, 181)]
+        sonar_msg.lidar = [random.randint(0, 100) for x in range(0, 181)]
         sonar_msg.angle16 = random.randint(0, 16)
         sonar_msg.angle8 = random.randint(0, 10)
         sonar_msg.pitch = random.randint(0, 7)

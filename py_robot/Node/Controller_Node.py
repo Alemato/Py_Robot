@@ -1,10 +1,10 @@
 #! /usr/bin/python
 
 import rospy
-import numpy
 import py_robot.msg as PyRobot
 
 controller_msg = PyRobot.Controller_Node()
+controller_to_lidar_msg = PyRobot.Controller_To_Lidar_Node()
 global angle16, angle8, pitch, roll, mag, acc, gyro, temp, lidar18, comando, switch, sonar, volt, eureca, visione
 
 angle16 = None
@@ -68,13 +68,13 @@ def callback_prolog(msg):
 
 def endfunction():
     global comando
-    comando = 'stop'                             # da rivedere
+    # comando = 'stop'                             # da rivedere
     rospy.signal_shutdown('Mission Complete')
 
 
 def callback_switch(msg):
     global switch
-    switch = msg.switch
+    switch = msg.switches
 
 
 def callback_sonar_volt(msg):
@@ -85,8 +85,7 @@ def callback_sonar_volt(msg):
 
 def callback_lidar_compass(msg):
     global angle16, angle8, pitch, roll, mag, acc, gyro, temp, lidar18
-    lidar = msg.lidar
-    lidar18 = dividilista(lidar)
+    lidar18 = msg.lidar
     angle16 = msg.angle16
     angle8 = msg.angle8
     pitch = msg.pitch
@@ -97,11 +96,6 @@ def callback_lidar_compass(msg):
     temp = msg.temp
 
 
-def dividilista(lista):
-    listadivisa = numpy.split(lista, [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170])
-    listamedia = numpy.mean(listadivisa, axis=1, dtype=numpy.float64)
-    listamedia = listamedia.tolist()
-    return listamedia
 
 
 def callback_mvcamera(msg):
@@ -125,6 +119,7 @@ def main():
     rospy.init_node("Controller_Node", disable_signals=True)
     # inizializzazioni Publisher e Subsciber
     controller_pub = rospy.Publisher("controller_pub", PyRobot.Controller_Node, queue_size=1)
+    controller_to_lidar_pub = rospy.Publisher("controller_To_Lidar_pub", PyRobot.Controller_To_Lidar_Node, queue_size=1)
     rospy.Subscriber("prolog_sub", PyRobot.Prolog_Node, callback_prolog)
     rospy.Subscriber("switch_sub", PyRobot.Motor_Switch_Node, callback_switch)
     rospy.Subscriber("sonar_volt_sub", PyRobot.Sonar_Volt_Node, callback_sonar_volt)
@@ -143,7 +138,7 @@ def main():
             controller_msg.acc = acc  # messaggio per il nodo Prolog per acc
             controller_msg.gyro = gyro  # messaggio per il nodo Prolog per gyro
             controller_msg.temp = temp  # messaggio per il nodo Prolog per temp
-            controller_msg.switch = switch  # messaggio per il nodo Prolog per switch
+            controller_msg.switches = switch  # messaggio per il nodo Prolog per switch
             controller_msg.velo = comando  # messaggio per il nodo Motor_Switch per Motor
             controller_msg.volt = volt  # messaggio per il nodo Prolog per volt
             controller_msg.sonar = sonar  # messaggio per il nodo Prolog per sonar
@@ -153,9 +148,10 @@ def main():
                 controller_msg.qrcode = 1  # messaggio per il nodo Prolog per qrcode
 
             if comando == 'stop':  # qrcode dal nodo MVCamera
-                controller_msg.on_off_lidar = True
+                controller_to_lidar_msg.on_off_lidar = True
 
             controller_pub.publish(controller_msg)
+            controller_to_lidar_pub.publish(controller_to_lidar_msg)
             rospy.loginfo(controller_msg)
             r.sleep()
             resetvar()
