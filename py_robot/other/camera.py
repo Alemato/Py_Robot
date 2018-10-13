@@ -10,13 +10,13 @@
 # importare la librerie di python di OpenCV
 import cv2
 
-# np è un alias che punta alla libreria numpy
+# np e un alias che punta alla libreria numpy
 import numpy as np
 
 # cattura fotogrammi dalla fotocamera
 cap = cv2.VideoCapture(0)
 
-# il ciclo viene eseguito se la cattura è stata inizializzata
+# il ciclo viene eseguito se la cattura e stata inizializzata
 while (1):
 
     # legge i fotogrammi da una fotocamera

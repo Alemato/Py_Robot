@@ -37,7 +37,7 @@ def objectoggetti(connessione):
             simxReadProximitySensor(connessione, mario, simx_opmode_streaming)
             simxGetObjectOrientation(connessione, mario, sim_handle_parent, simx_opmode_streaming)
         elif i < 9:
-            simxGetVisionSensorImage(connessione, mario, 0, simx_opmode_streaming)
+            simxGetVisionSensorImage(connessione, mario, 1, simx_opmode_streaming)
         if not res == 0:
             print ("Creation Error")
             return
@@ -138,6 +138,7 @@ oggetti=objectoggetti(clientID)
 def main():
     clientID = connessione()
     objectoggetti(clientID)
+    immagine(clientID, oggetti[7])
 
 
-# main()
+main()
