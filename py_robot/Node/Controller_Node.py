@@ -108,8 +108,8 @@ def callback_pi_camera(msg):
     visione = msg.visione
 
 
-def ifNotNone(angle16, angle8, pitch, roll, mag, acc, gyro, temp, comando, volt, sonar):
-    return angle16 is not None and angle8 is not None and pitch is not None and roll is not None and mag is not None and acc is not None and gyro is not None and temp is not None and comando is not None and volt is not None and sonar is not None
+def ifNotNone(angle16, angle8, pitch, roll, mag, acc, gyro, temp, comando, volt, sonar, visione):
+    return angle16 is not None and angle8 is not None and pitch is not None and roll is not None and mag is not None and acc is not None and gyro is not None and temp is not None and comando is not None and volt is not None and sonar is not None and visione is not None
 
 
 def main():
@@ -120,7 +120,7 @@ def main():
     # inizializzazioni Publisher e Subsciber
     controller_pub = rospy.Publisher("controller_pub", PyRobot.Controller_Node, queue_size=1)
     controller_to_lidar_pub = rospy.Publisher("controller_To_Lidar_pub", PyRobot.Controller_To_Lidar_Node, queue_size=1)
-    rospy.Subscriber("prolog_sub", PyRobot.Prolog_Node, callback_prolog)
+    rospy.Subscriber("prolog_sub", PyRobot.Prolog_IA_Node, callback_prolog)
     rospy.Subscriber("switch_sub", PyRobot.Motor_Switch_Node, callback_switch)
     rospy.Subscriber("sonar_volt_sub", PyRobot.Sonar_Volt_Node, callback_sonar_volt)
     rospy.Subscriber("mv_camera_sub", PyRobot.MV_Camera_Node, callback_mvcamera)
@@ -128,7 +128,7 @@ def main():
     rospy.Subscriber("pi_camera_sub", PyRobot.Pi_Camera_Node, callback_pi_camera)
     r = rospy.Rate(1)
     while not rospy.is_shutdown():
-        if ifNotNone(angle16, angle8, pitch, roll, mag, acc, gyro, temp, comando, volt, sonar):
+        if ifNotNone(angle16, angle8, pitch, roll, mag, acc, gyro, temp, comando, volt, sonar, visione):
             controller_msg.lidar = lidar18  # messaggio per il nodo Prolog per distanze lidar
             controller_msg.angle16 = angle16  # messaggio per il nodo Prolog per angle16
             controller_msg.angle8 = angle8  # messaggio per il nodo Prolog per angle8
