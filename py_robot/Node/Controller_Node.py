@@ -5,7 +5,6 @@ import py_robot.msg as PyRobot
 
 controller_msg = PyRobot.Controller_Node()
 controller_to_lidar_msg = PyRobot.Controller_To_Lidar_Node()
-global angle16, angle8, pitch, roll, mag, acc, gyro, temp, lidar18, comando, switch, sonar, volt, eureca, visione
 
 angle16 = None
 angle8 = None
@@ -118,14 +117,14 @@ def main():
     # inizializzazione nodo Controller
     rospy.init_node("Controller_Node", disable_signals=True)
     # inizializzazioni Publisher e Subsciber
-    controller_pub = rospy.Publisher("controller_pub", PyRobot.Controller_Node, queue_size=1)
-    controller_to_lidar_pub = rospy.Publisher("controller_To_Lidar_pub", PyRobot.Controller_To_Lidar_Node, queue_size=1)
-    rospy.Subscriber("prolog_sub", PyRobot.Prolog_IA_Node, callback_prolog)
-    rospy.Subscriber("switch_sub", PyRobot.Motor_Switch_Node, callback_switch)
-    rospy.Subscriber("sonar_volt_sub", PyRobot.Sonar_Volt_Node, callback_sonar_volt)
-    rospy.Subscriber("mv_camera_sub", PyRobot.MV_Camera_Node, callback_mvcamera)
-    rospy.Subscriber("lidar_compass_sub", PyRobot.Lidar_Compass_Node, callback_lidar_compass)
-    rospy.Subscriber("pi_camera_sub", PyRobot.Pi_Camera_Node, callback_pi_camera)
+    controller_pub = rospy.Publisher("controller", PyRobot.Controller_Node, queue_size=1)
+    controller_to_lidar_pub = rospy.Publisher("controller_To_Lidar", PyRobot.Controller_To_Lidar_Node, queue_size=1)
+    rospy.Subscriber("prolog", PyRobot.Prolog_IA_Node, callback_prolog)
+    rospy.Subscriber("switch", PyRobot.Motor_Switch_Node, callback_switch)
+    rospy.Subscriber("sonar_volt", PyRobot.Sonar_Volt_Node, callback_sonar_volt)
+    rospy.Subscriber("mv_camera", PyRobot.MV_Camera_Node, callback_mvcamera)
+    rospy.Subscriber("lidar_compass", PyRobot.Lidar_Compass_Node, callback_lidar_compass)
+    rospy.Subscriber("pi_camera", PyRobot.Pi_Camera_Node, callback_pi_camera)
     r = rospy.Rate(1)
     while not rospy.is_shutdown():
         if ifNotNone(angle16, angle8, pitch, roll, mag, acc, gyro, temp, comando, volt, sonar, visione):

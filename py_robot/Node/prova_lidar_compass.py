@@ -8,8 +8,8 @@ sonar_msg = PyRobot.Lidar_Compass_Node()
 
 
 def talker():
+    rospy.init_node('Lidar_Compass_Node')
     pub = rospy.Publisher('lidar_compass', PyRobot.Lidar_Compass_Node, queue_size=1)
-    rospy.init_node('talker')
     rate = rospy.Rate(10)  # 10hz
     while not rospy.is_shutdown():
         sonar_msg.lidar = [random.randint(0, 100) for x in range(0, 181)]
