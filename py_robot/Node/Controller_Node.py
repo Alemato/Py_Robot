@@ -24,6 +24,11 @@ visione = None
 
 
 def resetvar():
+    '''
+    Funzione che setta le variabili a nullo per evitare l'invio di messaggi non completi.
+    Lavora sulle variabili globali angle16, angle8, pitch, roll, mag, acc, gyro,
+    temp, lidar18, comando, switch, sonar, volt, eureca e visione
+    '''
     global angle16, angle8, pitch, roll, mag, acc, gyro, temp, lidar18, comando, switch, sonar, volt, eureca, visione
 
     angle16 = None
@@ -44,6 +49,10 @@ def resetvar():
 
 
 def callback_prolog(msg):
+    '''
+    Funzione Callback che processa i dati inviati dai Nodo IA_Prolog
+    :param msg: messaggio ROS dal Nodo IA_Prolog
+    '''
     global comando
     comando = ""
     risposta_prolog = msg.risposta
@@ -66,23 +75,38 @@ def callback_prolog(msg):
 
 
 def endfunction():
+    '''
+    Funzione di fine programma. Si occupa di far terminare il Nodo Controller
+    '''
     global comando
     # comando = 'stop'                             # da rivedere
     rospy.signal_shutdown('Mission Complete')
 
 
 def callback_switch(msg):
+    '''
+    Funzione Callback che processa i dati inviati dai Nodo Motor_Switch
+    :param msg: messaggio ROS dal Nodo Motor_Switch
+    '''
     global switch
     switch = msg.switches
 
 
 def callback_sonar_volt(msg):
+    '''
+    Funzione Callback che processa i dati inviati dai Nodo Sonar_Volt
+    :param msg: messaggio ROS dal Nodo Sonar_Volt
+    '''
     global sonar, volt
     sonar = msg.sonar
     volt = msg.volt
 
 
 def callback_lidar_compass(msg):
+    '''
+    Funzione Callback che processa i dati inviati dai Nodo Lidar_Compass
+    :param msg: messaggio ROS dal Nodo Lidar_Compass
+    '''
     global angle16, angle8, pitch, roll, mag, acc, gyro, temp, lidar18
     lidar18 = msg.lidar
     angle16 = msg.angle16
@@ -95,23 +119,39 @@ def callback_lidar_compass(msg):
     temp = msg.temp
 
 
-
-
 def callback_mvcamera(msg):
+    '''
+    Funzione Callback che processa i dati inviati dai Nodo MV_Camera
+    :param msg: messaggio ROS dal Nodo MV_Camera
+    '''
     global eureca
     eureca = msg.eureca
 
 
 def callback_pi_camera(msg):
+    '''
+    Funzione Callback che processa i dati inviati dai Nodo PI_Camera
+    :param msg: messaggio ROS dal Nodo PI_Camera
+    '''
     global visione
     visione = msg.visione
 
 
 def ifNotNone(angle16, angle8, pitch, roll, mag, acc, gyro, temp, comando, volt, sonar, visione):
+    '''
+    Funzione che controlla se tutte le variabili non sono nulle per poterle includere nel messaggio
+
+    :param angle16, angle8, pitch, roll, mag, acc, gyro, temp, comando, volt, sonar, visione: variabili globali
+    :return angle16, angle8, pitch, roll, mag, acc, gyro, temp, comando, volt, sonar, visione: variabili globali se non nulle
+    '''
     return angle16 is not None and angle8 is not None and pitch is not None and roll is not None and mag is not None and acc is not None and gyro is not None and temp is not None and comando is not None and volt is not None and sonar is not None and visione is not None
 
 
 def main():
+    '''
+    Funzione principale che si occupa di inizializzare il Nodo, i Pubblisher e i Subscriber. Si occupa anche di salvare
+    i valori ricevuti dai vari Nodi nei mesaggi Controller_Node.msg e Controller_To_Lidar.msg.
+    '''
     global angle16, angle8, pitch, roll, mag, acc, gyro, temp, lidar18, comando, switch, sonar, volt, eureca, visione
     resetvar()
     # inizializzazione nodo Controller
@@ -146,14 +186,14 @@ def main():
             if eureca == 'trovato':
                 controller_msg.qrcode = 1  # messaggio per il nodo Prolog per qrcode
 
-            if comando == 'stop':  # qrcode dal nodo MVCamera
+            if comando == 'stop':  # messaggio per il Nodo  Compass_Servo_Lidar
                 controller_to_lidar_msg.on_off_lidar = True
 
+            # funzioni Publish ROS
             controller_pub.publish(controller_msg)
             controller_to_lidar_pub.publish(controller_to_lidar_msg)
-            rospy.loginfo(controller_msg)
-            r.sleep()
             resetvar()
+            r.sleep()
 
 
 if __name__ == '__main__':
