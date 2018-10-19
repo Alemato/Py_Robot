@@ -3,10 +3,16 @@
 from librerie import *
 import cv2
 import numpy as np
-
+import time
+import py_robot.msg as PyRobot
+import rospy
 
 clientID = None
 oggetto = []
+img = None
+ris1 = None
+ris = None
+pi_camera_msg = PyRobot.Pi_Camera_Node()
 
 
 def connessione():
@@ -34,7 +40,8 @@ def oggetti(clientID):
     global oggetto
     nomioggetti = ['Pi_Camera']
     res, objecthandle = simxGetObjectHandle(clientID, 'Pi_Camera', simx_opmode_oneshot_wait)
-    print res
+    err, resolution, image = simxGetVisionSensorImage(clientID, objecthandle, 0, simx_opmode_streaming)
+    time.sleep(1)
     if not res == 0:
         print ("Creation Error")
         return
@@ -45,31 +52,35 @@ def oggetti(clientID):
 
 
 def immagine(clientID):
-    '''
+    """
     funzione che serve per prendere l'immagine da vrep
     :param clientID:
     :return: img immagine
-    '''
-    global oggetto
+    """
+    global oggetto, img
     err, resolution, image = simxGetVisionSensorImage(clientID, oggetto[0], 0, simx_opmode_buffer)
+    if not err == 0:
+        print ("Image Received")
+    else:
+        print ("ERROR IMAGE")
     img = np.array(image, dtype=np.uint8)
     img.resize([resolution[0], resolution[1], 3])
     img = np.rot90(img, 2)
     img = np.fliplr(img)
-    print err
-    print resolution
-    print image
-    # img.resize([resolution[0], resolution[1], 3])
-    # img = np.rot90(img, 2)
-    # img = np.fliplr(img)
-    # img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
     return img
 
 
 def imgs(image):
+    """
+    funzione che elabora l'immagine ricevuta, ritorna comando
+    :param image: immagine del mondo v-rep
+    :return: string command
+    """
+    global ris1, ris
     ris = cv2.Canny(image, 100, 200)
     misura = np.array([])
     height, width = ris.shape
+    print (height, width)
     ris1 = ris.copy()
     for x in range(width - 1):
         for h in range(height - 1):
@@ -79,36 +90,50 @@ def imgs(image):
                 break
             else:
                 ris1.itemset((hei, x), 50)
-    misura = np.split(misura, [90, 220])
+    misura = np.split(misura, [150, 362])
     media_sinistra = np.median(misura[0])
     media_centrale = np.median(misura[1])
     media_destra = np.median(misura[2])
+    print ("MEDIANS ")
     print(media_sinistra, media_centrale, media_destra)
+    print ("COMMAND ")
     if media_sinistra < media_centrale:
         if (media_sinistra < media_destra):
             print("vai a sinistra: ", media_sinistra)
-            return "vai a sinistra"
+            return "sinistra"
         else:
             print("vai a destra: ", media_destra)
             return "vai a destra"
     elif media_centrale < media_destra:
         print("continua dritto: ", media_centrale)
-        return "continua dritto"
+        return "dritto"
     else:
         print("vai a destra: ", media_destra)
-        return "via a destra"
+        return "destra"
+
 
 def main():
-    global clientID, oggetto
+    global clientID, oggetto, img, ris1, ris
     clientID = connessione()
     oggetto = oggetti(clientID)
-    print(oggetto)
-    print(imgs(immagine(clientID)))
+    rospy.init_node("Pi_Camera_Node", disable_signals=True)
+    pi_camera_pub = rospy.Publisher("pi_camera_pub", PyRobot.Pi_Camera_Node, queue_size=1)
+    r = rospy.Rate(1)
+    while not rospy.is_shutdown():
+        pi_camera_msg.visione = imgs(immagine(clientID))
+        pi_camera_pub.publish(pi_camera_msg)
+        r.sleep()
     # while (1):
-    #     cv2.imshow('img', immagine(clientID))
+    #     cv2.imshow('img', img)
+    #     cv2.imshow('ris', ris)
+    #     cv2.imshow('ris1', ris1)
     #     k = cv2.waitKey(5) & 0xFF
     #     if k == 27:
     #         break
 
+
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except rospy.ROSInterruptException:
+        pass

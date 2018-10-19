@@ -41,16 +41,16 @@ def imgs():
     if media_sinistra < media_centrale:
         if (media_sinistra < media_destra):
             print("vai a sinistra: ", media_sinistra)
-            return "vai a sinistra"
+            return "sinistra"
         else:
             print("vai a destra: ", media_destra)
-            return "vai a destra"
+            return "destra"
     elif media_centrale < media_destra:
         print("continua dritto: ", media_centrale)
-        return "continua dritto"
+        return "dritto"
     else:
         print("vai a destra: ", media_destra)
-        return "via a destra"
+        return "destra"
 
 
 def main():
