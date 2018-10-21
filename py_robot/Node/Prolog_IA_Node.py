@@ -4,52 +4,35 @@ import pyswip.prolog
 import py_robot.msg as PyRobot
 import rospy
 
-controller_sub = PyRobot.Controller_Node()
-prolog_pub = PyRobot.Prolog_IA_Node()
+prolog_msg = PyRobot.Prolog_IA_Node()
 
-
-# def callback(msg, args):
-#     commandolder = args[0]
-#     qrcode = msg.qrcode
-#     fotocamera = msg.fotocamera
-#     switch = msg.switch
-#     sonar = msg.sonar
-#     volt = msg.volt
-#     lidar = msg.lidar
-#     angle16 = msg.angle16
-#     angle8 = msg.angle8
-#     pitch = msg.pitch
-#     roll = msg.roll
-#     mag = msg.mag
-#     acc = msg.acc
-#     gyro = msg.gyro
-#     temp = msg.temp
-#     oldangle = str(30)
-def callback():
-    commandolder = "attiva_lidar"
-    qrcode = 0
-    fotocamera = "centro"
-    switch = [0, 0, 0]
-    sonar = [14, 56, 14]
-    volt = 13
-    lidar = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
-    angle16 = 10
-    angle8 = 10
-    pitch = 10
-    roll = 10
-    mag = [1, 2, 3, 4, 5, 6]
-    acc = [1, 2, 3, 4, 5, 6]
-    gyro = [1, 2, 3, 4, 5, 6]
-    temp = 24
-    oldangle = 30
-
-    command = prologIA(commandolder, qrcode, fotocamera, switch, sonar, volt, lidar, angle16, angle8, pitch, roll, mag,
-                       acc, gyro, temp, oldangle)
-    print command[0]['Result']
+commandolder = "avanti"
+oldangle = None
+commandIA = None
 
 
 def prologIA(commandolder, qrcode, fotocamera, switch, sonar, volt, lidar, angle16, angle8, pitch, roll, mag, acc, gyro,
              temp, oldangle):
+    """
+    funzione che esegue prolog
+    :param commandolder:  vecchio comando di default e' avanti
+    :param qrcode: 0 per non trovato 1 per trovato
+    :param fotocamera: vale sinistra o destra o centro e identifica lo spazio libero
+    :param switch: 0 se non attivo 1 per attivo e' un arry di 3 elementi
+    :param sonar: vale la misurazione effettuata e' un array di 3 elementi
+    :param volt: vale la misurazione effettuata
+    :param lidar: vale le misurazioni effettuate e' un array di 19 elementi
+    :param angle16: vale la misurazione effettuata
+    :param angle8: vale la misurazione effettuata
+    :param pitch: vale la misurazione effettuata
+    :param roll: vale la misurazione effettuata
+    :param mag: vale le misurazioni effettuate e' un array di 6 elementi
+    :param acc: vale le misurazioni effettuate e' un array di 6 elementi
+    :param gyro: vale le misurazioni effettuate e' un array di 6 elementi
+    :param temp: vale la misurazione effettuata
+    :param oldangle: vale un angolo iniziale
+    :return: resultato della query
+    """
     # Inizializzazione Prolog
     prolog = pyswip.Prolog()
 
@@ -69,9 +52,9 @@ def prologIA(commandolder, qrcode, fotocamera, switch, sonar, volt, lidar, angle
     prolog.assertz("sonar(destra, " + str(sonar[2]) + ")")
 
     # switch
-    prolog.assertz("switch(sx, " + str(switch[0]) + ")")
-    prolog.assertz("switch(ce, " + str(switch[1]) + ")")
-    prolog.assertz("switch(dx, " + str(switch[2]) + ")")
+    prolog.assertz("switch(sinistra, " + str(switch[0]) + ")")
+    prolog.assertz("switch(centro, " + str(switch[1]) + ")")
+    prolog.assertz("switch(destra, " + str(switch[2]) + ")")
 
     # volt
     prolog.assertz("volt(" + str(volt) + ")")
@@ -104,9 +87,6 @@ def prologIA(commandolder, qrcode, fotocamera, switch, sonar, volt, lidar, angle
     # angolo vecchio
     prolog.assertz("oldangle8(" + str(oldangle) + ")")
 
-    # domanda
-    prolog.assertz("commandolder(" + commandolder + ")")
-
     # Creazione comandi
     prolog.assertz("command(avanti, 1)")
     prolog.assertz("command(destra, 2)")
@@ -124,7 +104,7 @@ def prologIA(commandolder, qrcode, fotocamera, switch, sonar, volt, lidar, angle
     #############################
 
     # regola per gli switch false se sbatte true se non sbatte
-    prolog.assertz("switch(_):- switch(sx,X), switch(ce,Y), switch(dx, Z), X == 0, Y == 0, Z == 0, !")
+    prolog.assertz("switch(_):- switch(sinistra,X), switch(centro,Y), switch(destra, Z), X == 0, Y == 0, Z == 0, !")
 
     # regola per i sonar, serve per far cambiare la direzione predefinita dritto a una certa distanza da un possibile ostacolo
     prolog.assertz("sonartrue(_):- sonar(destra, A), sonar(centro, B), sonar(sinistra, C),  A > 10, B > 10, C > 10, !")
@@ -139,14 +119,19 @@ def prologIA(commandolder, qrcode, fotocamera, switch, sonar, volt, lidar, angle
     # comando fine
     prolog.assertz("command(X):- qrcode(1), C is 6, command(X,C),!")
 
+    # comando attiva lidar
+    prolog.assertz("command(X):- commandolder(O), O \== indietro, switch(_,1), volt(Y), Y > 11, qrcode(Q), Q == 0, "
+                   "C is 10, command(X,C),!")
+
     # comando coregi a destra
-    prolog.assertz("command(X):-commandolder(O), O == avanti, switch(_), volt(Y), Y > 11, qrcode(Q), Q == 0, sonartrue(_), angle8(A), oldangle8(B), S is A-B, S > 10, C is 8, command(X, C),!")
+    prolog.assertz("command(X):-commandolder(O), O == avanti, switch(_), volt(Y), Y > 11, qrcode(Q), Q == 0, "
+                   "sonartrue(_), angle8(A), oldangle8(B), S is A-B, S > 10, C is 8, command(X, C),!")
 
     # comando coregi a sinistra
-    prolog.assertz("command(X):-commandolder(O), O == avanti, switch(_), volt(Y), Y > 11, qrcode(Q), Q == 0, sonartrue(_), angle8(A), oldangle8(B), S is B-A, S > 10, C is 9, command(X, C),!")
+    prolog.assertz("command(X):-commandolder(O), O == avanti, switch(_), volt(Y), Y > 11, qrcode(Q), Q == 0, "
+                   "sonartrue(_), angle8(A), oldangle8(B), S is B-A, S > 10, C is 9, command(X, C),!")
 
     # comando indietro
-    prolog.assertz("command(X):- commandolder(O), O \== indietro, switch(_,1), volt(Y), Y > 11, qrcode(Q), Q == 0, C is 4, command(X,C),!")
     prolog.assertz("command(X):- commandolder(O), O \== indietro, \+ sonartrue(_), volt(Y), Y > 11, qrcode(Q), Q == 0, "
                    "C is 4, command(X,C),!")
 
@@ -234,29 +219,67 @@ def prologIA(commandolder, qrcode, fotocamera, switch, sonar, volt, lidar, angle
         ####################
         # Esequzione Query #
         ####################
-        result = list(prolog.query("commandlidar(Result)"))
-        return result
+
+        return list(prolog.query("commandlidar(Result)"))
+
 
     #############################
     # Esequzione query generale #
     #############################
 
-    result = list(prolog.query("command(Result)"))
-    return result
-# def main():
-#     commandolder = None
-#     controller_sub = rospy.Subscriber("prolog", PyRobot.Prolog_IA_Node, callback, commandolder)
-#
-#
-# if __name__ == '__main__':
-#     try:
-#         main()
-#     except rospy.ROSInterruptException:
-#         pass
+    return list(prolog.query("command(Result)"))
+
+
+def callback(msg):
+    """
+    funzione di callback di Ros, effetua le valutazioni del mondo circostante e fa uuna scelta
+    :param msg: messaggio ros dal controller
+    :return: nulla
+    """
+    global commandolder, oldangle, commandIA
+    qrcode = msg.qrcode
+    fotocamera = msg.fotocamera
+    switch = msg.switch
+    sonar = msg.sonar
+    volt = msg.volt
+    lidar = msg.lidar
+    angle16 = msg.angle16
+    angle8 = msg.angle8
+    pitch = msg.pitch
+    roll = msg.roll
+    mag = msg.mag
+    acc = msg.acc
+    gyro = msg.gyro
+    temp = msg.temp
+
+    if commandolder == "correggi_a_destra" or commandolder == "correggi_a_sinistra" or oldangle is None:
+        oldangle = angle8
+
+    commandIA = prologIA(commandolder, qrcode, fotocamera, switch, sonar, volt, lidar, angle16, angle8, pitch, roll,
+                         mag, acc, gyro, temp, oldangle)
+
+    if commandIA == "sinistra" or commandIA == "destra" or commandIA == "indietro":
+        oldangle = None
+
+    commandolder = commandIA
 
 
 def main():
-    callback()
+    global commandIA
+    rospy.init_node("Prologo_IA_Node", disable_signals=True)
+    prolog_pub = rospy.Publisher("prolog_ia", PyRobot.Controller_Node, queue_size=1)
+    rospy.Subscriber("controller", PyRobot.Prolog_IA_Node, callback)
+    r = rospy.Rate(1)
+    while not rospy.is_shutdown():
+        if commandIA is not None:
+            prolog_msg.risposta = commandIA
+            commandIA = None
+            prolog_pub.publish(prolog_msg)
+            r.sleep()
+
 
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except rospy.ROSInterruptException:
+        pass
