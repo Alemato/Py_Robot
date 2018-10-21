@@ -70,6 +70,8 @@ def callback_prolog(msg):
         comando = ""
     elif risposta_prolog == 'correzione_destra':
         comando = ""
+    elif risposta_prolog == 'attiva_lidar':
+        comando = ""
     elif risposta_prolog == 'fine':
         endfunction()
 
@@ -159,7 +161,7 @@ def main():
     # inizializzazioni Publisher e Subsciber
     controller_pub = rospy.Publisher("controller", PyRobot.Controller_Node, queue_size=1)
     controller_to_lidar_pub = rospy.Publisher("controller_To_Lidar", PyRobot.Controller_To_Lidar_Node, queue_size=1)
-    rospy.Subscriber("prolog", PyRobot.Prolog_IA_Node, callback_prolog)
+    rospy.Subscriber("prolog_ia", PyRobot.Prolog_IA_Node, callback_prolog)
     rospy.Subscriber("switch", PyRobot.Motor_Switch_Node, callback_switch)
     rospy.Subscriber("sonar_volt", PyRobot.Sonar_Volt_Node, callback_sonar_volt)
     rospy.Subscriber("mv_camera", PyRobot.MV_Camera_Node, callback_mvcamera)
