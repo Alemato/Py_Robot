@@ -47,7 +47,7 @@ def imgs():
             return "destra"
     elif media_centrale < media_destra:
         print("continua dritto: ", media_centrale)
-        return "dritto"
+        return "centro"
     else:
         print("vai a destra: ", media_destra)
         return "destra"
