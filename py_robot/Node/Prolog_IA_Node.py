@@ -267,8 +267,8 @@ def callback(msg):
 def main():
     global commandIA
     rospy.init_node("Prologo_IA_Node", disable_signals=True)
-    prolog_pub = rospy.Publisher("prolog_ia", PyRobot.Controller_Node, queue_size=1)
-    rospy.Subscriber("controller", PyRobot.Prolog_IA_Node, callback)
+    prolog_pub = rospy.Publisher("prolog_ia", PyRobot.Prolog_IA_Node, queue_size=1)
+    rospy.Subscriber("controller", PyRobot.Controller_Node, callback)
     r = rospy.Rate(1)
     while not rospy.is_shutdown():
         if commandIA is not None:
