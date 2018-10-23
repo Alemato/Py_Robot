@@ -1,8 +1,7 @@
 #! /usr/bin/python
-
 import rospy
-import numpy
 import py_robot.msg as PyRobot
+
 
 controller_msg = PyRobot.Controller_Node()
 controller_to_lidar_msg = PyRobot.Controller_To_Lidar_Node()
@@ -27,10 +26,11 @@ visione = None
 
 def resetvar():
     """
-    funzione per il reset delle variabili
-    :return:
+    Funzione che setta le variabili a nullo per evitare l'invio di messaggi non completi.
+    Lavora sulle variabili globali angle16, angle8, pitch, roll, mag, acc, gyro,
+    temp, lidar18, comando, switch, sonar, volt, eureca e visione
     """
-    global angle16, angle8, pitch, roll, mag, acc, gyro, temp, lidar18, comando, switch, sonar, volt, eureca, visione
+    global angle16, angle8, pitch, roll, mag, acc, gyro, temp, lidar18, switch, sonar, volt, eureca, visione, comando
 
     angle16 = None
     angle8 = None
@@ -57,6 +57,7 @@ def callback_prolog(msg):
     :return: nulla
     """
     global comando
+    comando = ""
     risposta_prolog = msg.risposta
     if risposta_prolog == 'dritto':
         comando = "e"
@@ -68,39 +69,37 @@ def callback_prolog(msg):
         comando = "i"
     elif risposta_prolog == 'stop':
         comando = "s"
-    elif risposta_prolog == 'correzione_destra':  # da rivedere e aggiungere gli altri comandi
-        comando = ""
-    elif risposta_prolog == 'correzione_destra':
-        comando = ""
+    elif risposta_prolog == 'correggi_a_destra':
+        comando = "t"
+    elif risposta_prolog == 'correggi_a_sinistra':
+        comando = "u"
+    elif risposta_prolog == 'attiva_lidar':
+        comando = "v"
     elif risposta_prolog == 'fine':
         endfunction()
 
 
 def endfunction():
     """
-    funzione per la fine e il blocco della simulazione
-    :return: nulla
+    Funzione di fine programma. Si occupa di far terminare il Nodo Controller
     """
     global comando
-    comando = 'stop'  # da rivedere
     rospy.signal_shutdown('Mission Complete')
 
 
 def callback_switch(msg):
     """
-    funzione di callback per i messaggi provenienti dal nodo Motor_Switch_Node
-    :param msg: messagio ricevuto
-    :return: nulla
+    Funzione Callback che processa i dati inviati dai Nodo Motor_Switch
+    :param msg: messaggio ROS dal Nodo Motor_Switch
     """
     global switch
-    switch = msg.switch
+    switch = msg.switches
 
 
 def callback_sonar_volt(msg):
     """
-    funzione di callback per i messaggi provenienti dal nodo Sonar_Volt_Node
-    :param msg: messagio ricevuto
-    :return:
+    Funzione Callback che processa i dati inviati dai Nodo Sonar_Volt
+    :param msg: messaggio ROS dal Nodo Sonar_Volt
     """
     global sonar, volt
     sonar = msg.sonar
@@ -109,13 +108,11 @@ def callback_sonar_volt(msg):
 
 def callback_lidar_compass(msg):
     """
-    funzione di callback per i messaggi provenienti dal nodo Lidar_Compass_Node
-    :param msg: messagio ricevuto
-    :return:
+    Funzione Callback che processa i dati inviati dai Nodo Lidar_Compass
+    :param msg: messaggio ROS dal Nodo Lidar_Compass
     """
     global angle16, angle8, pitch, roll, mag, acc, gyro, temp, lidar18
-    lidar = msg.lidar
-    lidar18 = dividilista(lidar)
+    lidar18 = msg.lidar
     angle16 = msg.angle16
     angle8 = msg.angle8
     pitch = msg.pitch
@@ -126,23 +123,10 @@ def callback_lidar_compass(msg):
     temp = msg.temp
 
 
-def dividilista(lista):
-    """
-    funzione che divide in array da 10 elementi e fa la media delle 180 misure del lidar,
-    :param lista: lista delle 181 misure del lidar
-    :return listamedia: lista delle 19 misure medie (prese ogni 10 gradi)
-    """
-    listadivisa = numpy.split(lista, [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170])
-    listamedia = numpy.mean(listadivisa, axis=1, dtype=numpy.float64)
-    listamedia = listamedia.tolist()
-    return listamedia
-
-
 def callback_mvcamera(msg):
     """
-    funzione di callback per i messaggi provenienti dal nodo MV_Camera_Node
-    :param msg: messagio ricevuto
-    :return: nulla
+    Funzione Callback che processa i dati inviati dai Nodo MV_Camera
+    :param msg: messaggio ROS dal Nodo MV_Camera
     """
     global eureca
     eureca = msg.eureca
@@ -150,15 +134,14 @@ def callback_mvcamera(msg):
 
 def callback_pi_camera(msg):
     """
-    funzione di callback per i messaggi provenienti dal nodo Pi_Camer_Node
-    :param msg: messagio ricevuto
-    :return: nulla
+    Funzione Callback che processa i dati inviati dai Nodo PI_Camera
+    :param msg: messaggio ROS dal Nodo PI_Camera
     """
     global visione
     visione = msg.visione
 
 
-def ifNotNone(angle16, angle8, pitch, roll, mag, acc, gyro, temp, comando, volt, sonar):
+def ifNotNone(angle16, angle8, pitch, roll, mag, acc, gyro, temp, volt, sonar, visione):
     """
     funzione di controlo delle variabili globali,
     controlla se sono state modificate tutte
@@ -175,25 +158,31 @@ def ifNotNone(angle16, angle8, pitch, roll, mag, acc, gyro, temp, comando, volt,
     :param sonar: misura dei sonar
     :return: True se sono modificate, False se sono ancora nulle
     """
-    return angle16 is not None and angle8 is not None and pitch is not None and roll is not None and mag is not None and acc is not None and gyro is not None and temp is not None and comando is not None and volt is not None and sonar is not None
+    return angle16 is not None and angle8 is not None and pitch is not None and roll is not None and mag is not None and acc is not None and gyro is not None and temp is not None and volt is not None and sonar is not None and visione is not None
 
 
 def main():
-    global angle16, angle8, pitch, roll, mag, acc, gyro, temp, lidar18, comando, switch, sonar, volt, eureca, visione
+    """
+    Funzione principale che si occupa di inizializzare il Nodo, i Pubblisher e i Subscriber. Si occupa anche di salvare
+    i valori ricevuti dai vari Nodi nei mesaggi Controller_Node.msg e Controller_To_Lidar.msg.
+    """
+    global angle16, angle8, pitch, roll, mag, acc, gyro, temp, lidar18, switch, sonar, volt, eureca, visione, comando
     resetvar()
     # inizializzazione nodo Controller
     rospy.init_node("Controller_Node", disable_signals=True)
     # inizializzazioni Publisher e Subsciber
-    controller_pub = rospy.Publisher("controller_pub", PyRobot.Controller_Node, queue_size=1)
-    rospy.Subscriber("prolog_sub", PyRobot.Prolog_Node, callback_prolog)
-    rospy.Subscriber("switch_sub", PyRobot.Motor_Switch_Node, callback_switch)
-    rospy.Subscriber("sonar_volt_sub", PyRobot.Sonar_Volt_Node, callback_sonar_volt)
-    rospy.Subscriber("mv_camera_sub", PyRobot.MV_Camera_Node, callback_mvcamera)
-    rospy.Subscriber("lidar_compass_sub", PyRobot.Lidar_Compass_Node, callback_lidar_compass)
-    rospy.Subscriber("pi_camera_sub", PyRobot.Pi_Camera_Node, callback_pi_camera)
+    controller_pub = rospy.Publisher("controller", PyRobot.Controller_Node, queue_size=1)
+    controller_to_lidar_pub = rospy.Publisher("controller_To_Lidar", PyRobot.Controller_To_Lidar_Node, queue_size=1)
+    controller_to_motor_pub = rospy.Publisher("controller_To_Motor", PyRobot.Controller_To_Motor_Node, queue_size=1)
+    rospy.Subscriber("prolog", PyRobot.Prolog_IA_Node, callback_prolog)
+    rospy.Subscriber("switches", PyRobot.Motor_Switch_Node, callback_switch)
+    rospy.Subscriber("sonar_volt", PyRobot.Sonar_Volt_Node, callback_sonar_volt)
+    rospy.Subscriber("mv_camera", PyRobot.MV_Camera_Node, callback_mvcamera)
+    rospy.Subscriber("lidar_compass", PyRobot.Lidar_Compass_Node, callback_lidar_compass)
+    rospy.Subscriber("pi_camera", PyRobot.Pi_Camera_Node, callback_pi_camera)
     r = rospy.Rate(1)
     while not rospy.is_shutdown():
-        if ifNotNone(angle16, angle8, pitch, roll, mag, acc, gyro, temp, comando, volt, sonar):
+        if ifNotNone(angle16, angle8, pitch, roll, mag, acc, gyro, temp, volt, sonar, visione):
             controller_msg.lidar = lidar18  # messaggio per il nodo Prolog per distanze lidar
             controller_msg.angle16 = angle16  # messaggio per il nodo Prolog per angle16
             controller_msg.angle8 = angle8  # messaggio per il nodo Prolog per angle8
@@ -212,17 +201,19 @@ def main():
             if eureca == 'trovato':
                 controller_msg.qrcode = 1  # messaggio per il nodo Prolog per qrcode
 
-            if comando == 'stop':  # qrcode dal nodo MVCamera
-                controller_msg.on_off_lidar = True
+            if comando == 'v':  # messaggio per il Nodo  Compass_Servo_Lidar
+                controller_to_lidar_msg.on_off_lidar = True
 
             if comando is not None:
                 controller_to_motor_msg.velo = comando  # messaggio per il nodo Motor_Switch per Motor
 
+            # funzioni Publish ROS
             controller_pub.publish(controller_msg)
+            controller_to_lidar_pub.publish(controller_to_lidar_msg)
+            controller_to_motor_pub.publish(controller_to_motor_msg)
 
-            rospy.loginfo(controller_msg)
-            r.sleep()
             resetvar()
+            r.sleep()
 
 
 if __name__ == '__main__':
