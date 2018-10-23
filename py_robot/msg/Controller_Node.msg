@@ -13,5 +13,4 @@ int16[6] mag
 int16[6] acc
 int16[6] gyro
 int16 temp
-string velo
 string visione

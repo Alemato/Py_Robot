@@ -58,6 +58,7 @@ add_message_files(
    MV_Camera_Node.msg
    Pi_Camera_Node.msg
    Controller_To_Lidar_Node.msg
+   Controller_To_Motor_Node.msg
 #   Message2.msg
 )
 
