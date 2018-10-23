@@ -3,7 +3,7 @@
 // custom message Motor_Switch_Node
 #include <py_robot/Motor_Switch_Node.h>
 // custom message Controller_Node
-#include <py_robot/Controller_Node.h>
+#include <py_robot/Controller_To_Motor_Node.h>
 // libreria motor driver
 #include <L298N.h>
 
@@ -34,12 +34,12 @@ L298N destra(PWMB, BIN1, BIN2, BIN1, BIN2, PWMB);
 String velocita;
 char cmd[1];
 int vel;
-int time_delay = 2;
+//int time_delay = 2000;
 
 //funzione callback
 // PARAM: messaggio ros velo
 
-void callback( const py_robot::Controller_Node& velo) {
+void callback( const py_robot::Controller_To_Motor_Node& velo) {
   // assegnamento del comando impartito dal Nodo Controller
   velocita = velo.velo;
   // conversione della da stringa ad array di char
@@ -47,7 +47,7 @@ void callback( const py_robot::Controller_Node& velo) {
 
 }
 // funzione sottoscrizione di ros
-ros::Subscriber<py_robot::Controller_Node> motor_sub("controller", callback);
+ros::Subscriber<py_robot::Controller_To_Motor_Node> motor_sub("controller_To_Motor", callback);
 
 // ros custom message sonar_volt
 py_robot::Motor_Switch_Node switches;
@@ -76,6 +76,13 @@ long switchsensor(int switchpin) {
     delay(20);
     // dopo 20 millisecondi controllo di nuovo se è ancora premuto per evitare errori
     if (digitalRead(switchpin) == HIGH) {
+      // procedura da attuare dopo che uno degli switch viene attivato
+      // stop
+      VaiAvanti(0, 2000);
+      // indietro per ___ secondi
+      VaiIndietro(80, 2000);
+      // stop
+      VaiAvanti(0, 2000);
       // ritorna 0 se lo switch non è stato attivato
       return 0;
     }
@@ -88,7 +95,7 @@ long switchsensor(int switchpin) {
 
 // funzione Avanti
 // PARAM: intero vel: parametro velocità
-void VaiAvanti(int vel) {
+void VaiAvanti(int vel, int time_delay) {
   // relativo al lato sinistro
   sinistra.forward(vel, time_delay);
   // relativo al lato destro
@@ -97,7 +104,7 @@ void VaiAvanti(int vel) {
 }
 // funzione Indietro
 // PARAM: intero vel: parametro velocità
-void VaiIndietro(int vel) {
+void VaiIndietro(int vel, int time_delay) {
   // relativo al motor drive collegato ai motori del lato sinistro con velocità ___ e tempo ___
   sinistra.backward(vel, time_delay);
   // relativo al motor drive collegato ai motori del lato destro con velocità ___ e tempo ___
@@ -141,43 +148,43 @@ void loop() {
   //switch case con i varin casi possibili dei comandi ricevuti dal Nodo Controller
   switch (cmd[0]) {
 
-    case 'a': VaiAvanti(70);
+    case 'a': VaiAvanti(70, 2000);
       break;
 
-    case 'b': VaiAvanti(90);
+    case 'b': VaiAvanti(90, 2000);
       break;
 
-    case 'c': VaiAvanti(110);
+    case 'c': VaiAvanti(110, 2000);
       break;
 
-    case 'd': VaiAvanti(130);
+    case 'd': VaiAvanti(130, 2000);
       break;
 
-    case 'e': VaiAvanti(150);
+    case 'e': VaiAvanti(150, 2000);
       break;
 
-    case 'f': VaiAvanti(170);
+    case 'f': VaiAvanti(170, 2000);
       break;
 
-    case 'g': VaiAvanti(190);
+    case 'g': VaiAvanti(190, 2000);
       break;
 
-    case 'h': VaiAvanti(210);
+    case 'h': VaiAvanti(210, 2000);
       break;
 
-    case 'i': VaiIndietro(80);
+    case 'i': VaiIndietro(80, 2000);
       break;
 
-    case 'l': VaiIndietro(100);
+    case 'l': VaiIndietro(100, 2000);
       break;
 
-    case 'm': VaiIndietro(150);
+    case 'm': VaiIndietro(150, 2000);
       break;
 
-    case 'o': VaiIndietro(180);
+    case 'o': VaiIndietro(180, 2000);
       break;
 
-    case 'p': VaiIndietro(210);
+    case 'p': VaiIndietro(210, 2000);
       break;
 
     case 'q': VaiSinistra();
@@ -186,7 +193,16 @@ void loop() {
     case 'r': VaiDestra();
       break;
 
-    case 's': VaiAvanti(0);
+    case 's': VaiAvanti(0, 2000);
+      break;
+
+    case 't': CorrezioneSinistra();
+      break;
+
+    case 'u': CorrezioneDestra();
+      break;
+
+    case 'v': VaiAvanti(0, 2000);    //stop per attivazione lidar
       break;
   }
 

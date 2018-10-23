@@ -51,8 +51,10 @@ def resetvar():
 
 def callback_prolog(msg):
     """
-    Funzione Callback che processa i dati inviati dai Nodo IA_Prolog
-    :param msg: messaggio ROS dal Nodo IA_Prolog
+    funzione di callback per i messaggi provenienti dal nodo Prolog_IA,
+    modifica la variabile globale comando
+    :param msg: messagio ricevuto
+    :return: nulla
     """
     global comando
     comando = ""
@@ -141,10 +143,20 @@ def callback_pi_camera(msg):
 
 def ifNotNone(angle16, angle8, pitch, roll, mag, acc, gyro, temp, volt, sonar, visione):
     """
-    Funzione che controlla se tutte le variabili non sono nulle per poterle includere nel messaggio
-
-    :param angle16, angle8, pitch, roll, mag, acc, gyro, temp, comando, volt, sonar, visione: variabili globali
-    :return angle16, angle8, pitch, roll, mag, acc, gyro, temp, comando, volt, sonar, visione: variabili globali se non nulle
+    funzione di controlo delle variabili globali,
+    controlla se sono state modificate tutte
+    :param angle16: misura del angolo a 16
+    :param angle8: misura del angolo a 8
+    :param pitch: misura del pitch
+    :param roll: misura del roll
+    :param mag: misura del mag
+    :param acc: misura del acc
+    :param gyro: misura del gyro
+    :param temp: misura della temperatura
+    :param comando: variabile del comando da inviare
+    :param volt: misura della batteria
+    :param sonar: misura dei sonar
+    :return: True se sono modificate, False se sono ancora nulle
     """
     return angle16 is not None and angle8 is not None and pitch is not None and roll is not None and mag is not None and acc is not None and gyro is not None and temp is not None and volt is not None and sonar is not None and visione is not None
 
@@ -161,6 +173,7 @@ def main():
     # inizializzazioni Publisher e Subsciber
     controller_pub = rospy.Publisher("controller", PyRobot.Controller_Node, queue_size=1)
     controller_to_lidar_pub = rospy.Publisher("controller_To_Lidar", PyRobot.Controller_To_Lidar_Node, queue_size=1)
+    controller_to_motor_pub = rospy.Publisher("controller_To_Motor", PyRobot.Controller_To_Motor_Node, queue_size=1)
     rospy.Subscriber("prolog", PyRobot.Prolog_IA_Node, callback_prolog)
     rospy.Subscriber("switch", PyRobot.Motor_Switch_Node, callback_switch)
     rospy.Subscriber("sonar_volt", PyRobot.Sonar_Volt_Node, callback_sonar_volt)
@@ -196,8 +209,9 @@ def main():
 
             # funzioni Publish ROS
             controller_pub.publish(controller_msg)
-
             controller_to_lidar_pub.publish(controller_to_lidar_msg)
+            controller_to_motor_pub.publish(controller_to_motor_msg)
+
             resetvar()
             r.sleep()
 

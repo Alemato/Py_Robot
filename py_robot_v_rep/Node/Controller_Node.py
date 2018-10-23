@@ -5,6 +5,8 @@ import numpy
 import py_robot.msg as PyRobot
 
 controller_msg = PyRobot.Controller_Node()
+controller_to_lidar_msg = PyRobot.Controller_To_Lidar_Node()
+controller_to_motor_msg = PyRobot.Controller_To_Motor_Node()
 
 angle16 = None
 angle8 = None
@@ -21,6 +23,7 @@ sonar = [None for x in range(0, 3)]
 volt = None
 eureca = None
 visione = None
+
 
 def resetvar():
     """
@@ -79,7 +82,7 @@ def endfunction():
     :return: nulla
     """
     global comando
-    comando = 'stop'                             # da rivedere
+    comando = 'stop'  # da rivedere
     rospy.signal_shutdown('Mission Complete')
 
 
@@ -200,8 +203,8 @@ def main():
             controller_msg.acc = acc  # messaggio per il nodo Prolog per acc
             controller_msg.gyro = gyro  # messaggio per il nodo Prolog per gyro
             controller_msg.temp = temp  # messaggio per il nodo Prolog per temp
-            controller_msg.switch = switch  # messaggio per il nodo Prolog per switch
-            controller_msg.velo = comando  # messaggio per il nodo Motor_Switch per Motor
+            controller_msg.switches = switch  # messaggio per il nodo Prolog per switch
+            # controller_msg.velo = comando  # messaggio per il nodo Motor_Switch per Motor
             controller_msg.volt = volt  # messaggio per il nodo Prolog per volt
             controller_msg.sonar = sonar  # messaggio per il nodo Prolog per sonar
             controller_msg.visione = visione  # messaggio per il nodo Prolog per Py Camera
@@ -212,7 +215,11 @@ def main():
             if comando == 'stop':  # qrcode dal nodo MVCamera
                 controller_msg.on_off_lidar = True
 
+            if comando is not None:
+                controller_to_motor_msg.velo = comando  # messaggio per il nodo Motor_Switch per Motor
+
             controller_pub.publish(controller_msg)
+
             rospy.loginfo(controller_msg)
             r.sleep()
             resetvar()
