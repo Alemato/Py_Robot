@@ -1,7 +1,10 @@
 #! /usr/bin/python
 import rospy
+import roslaunch.rlutil
+import roslaunch.parent
+import roslaunch
 import py_robot.msg as PyRobot
-
+import time
 
 controller_msg = PyRobot.Controller_Node()
 controller_to_lidar_msg = PyRobot.Controller_To_Lidar_Node()
@@ -22,6 +25,7 @@ sonar = [None for x in range(0, 3)]
 volt = None
 eureca = None
 visione = None
+launch = None
 
 
 def resetvar():
@@ -84,12 +88,26 @@ def callback_prolog(msg):
         endfunction()
 
 
+def startfunction():
+    """
+    Funzione di inizio programma. Si occupa di far partire i nodi
+    :return: nulla
+    """
+    uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
+    roslaunch.configure_logging(uuid)
+    launch = roslaunch.parent.ROSLaunchParent(uuid, ["/home/stefano/catkin_ws/src/py_robot/launch/node_launcher.launch"]) # qui da aggiornare con il path del file launch
+    launch.start()
+    rospy.loginfo("started")
+
+
 def endfunction():
     """
     Funzione di fine programma. Si occupa di far terminare il Nodo Controller
     :return: nulla
     """
     global comando
+    launch.shutdown()
+    time.sleep(1)
     rospy.signal_shutdown('Mission Complete')
 
 
@@ -184,6 +202,7 @@ def main():
     resetvar()
     # inizializzazione nodo Controller
     rospy.init_node("Controller_Node", disable_signals=True)
+    startfunction()
     # inizializzazioni Publisher e Subsciber
     controller_pub = rospy.Publisher("controller", PyRobot.Controller_Node, queue_size=1)
     controller_to_lidar_pub = rospy.Publisher("controller_To_Lidar", PyRobot.Controller_To_Lidar_Node, queue_size=1)
