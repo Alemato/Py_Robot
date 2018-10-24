@@ -239,7 +239,7 @@ def callback(msg):
     global commandolder, oldangle, commandIA
     qrcode = msg.qrcode
     fotocamera = msg.fotocamera
-    switch = msg.switch
+    switch = msg.switches
     sonar = msg.sonar
     volt = msg.volt
     lidar = msg.lidar
