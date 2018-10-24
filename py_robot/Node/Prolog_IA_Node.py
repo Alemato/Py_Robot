@@ -11,6 +11,40 @@ oldangle = None
 commandIA = None
 
 
+# var global
+qrcode = None
+fotocamera = None
+switch = None
+sonar = None
+volt = None
+lidar = None
+angle16 = None
+angle8 = None
+pitch = None
+roll = None
+mag = None
+acc = None
+gyro = None
+temp = None
+
+def resetNone():
+    qrcode = None
+    fotocamera = None
+    switch = None
+    sonar = None
+    volt = None
+    lidar = None
+    angle16 = None
+    angle8 = None
+    pitch = None
+    roll = None
+    mag = None
+    acc = None
+    gyro = None
+    temp = None
+
+
+
 def prologIA(commandolder, qrcode, fotocamera, switch, sonar, volt, lidar, angle16, angle8, pitch, roll, mag, acc, gyro,
              temp, oldangle):
     """
@@ -33,23 +67,26 @@ def prologIA(commandolder, qrcode, fotocamera, switch, sonar, volt, lidar, angle
     :param oldangle: vale un angolo iniziale
     :return: resultato della query
     """
+
+    print("entro")
     # Inizializzazione Prolog
     prolog = pyswip.Prolog()
-
+    prolog.assertz("ciao(mario, antonio)")
+    print prolog
     ###################
     # Creazione fatti #
     ###################
 
     # fotocomera
     prolog.assertz("fotocamera(" + str(fotocamera) + ")")
-
+    print ("qui")
     # qrcode 0 per false 1 per true
-    prolog.assertz("qrcode(" + str(int(qrcode)) + ")")
+    prolog.assertz("qrcode(" + str(qrcode) + ")")
 
     # mettere prima il destro cosi se sono 3 sonar uguali il sistema prendera il primo e quindi va avanti
-    prolog.assertz("sonar(sinistra, " + str(int(sonar[0])) + ")")
-    prolog.assertz("sonar(centro, " + str(int(sonar[1])) + ")")
-    prolog.assertz("sonar(destra, " + str(int(sonar[2])) + ")")
+    prolog.assertz("sonar(sinistra, " + str(sonar[0]) + ")")
+    prolog.assertz("sonar(centro, " + str(sonar[1]) + ")")
+    prolog.assertz("sonar(destra, " + str(sonar[2]) + ")")
 
     # switch
     prolog.assertz("switch(sinistra, " + str(switch[0]) + ")")
@@ -238,10 +275,13 @@ def callback(msg):
     :param msg: messaggio ros dal controller
     :return: nulla
     """
-    global commandolder, oldangle, commandIA
+    global commandolder, oldangle, commandIA, qrcode, fotocamera, switch,sonar,volt,lidar,angle8,angle16,pitch,roll,mag,acc,gyro,temp
     qrcode = msg.qrcode
-    fotocamera = msg.fotocamera
+    fotocamera = msg.visione
     switch = msg.switches
+    switch[0] = int(switch[0])
+    switch[1] = int(switch[1])
+    switch[2] = int(switch[2])
     sonar = msg.sonar
     volt = msg.volt
     lidar = msg.lidar
@@ -253,31 +293,54 @@ def callback(msg):
     acc = msg.acc
     gyro = msg.gyro
     temp = msg.temp
+    print (msg)
 
-    if commandolder == "correggi_a_destra" or commandolder == "correggi_a_sinistra" or oldangle is None:
-        oldangle = angle8
+def ifNotNone(angle16, angle8, pitch, roll, mag, acc, gyro, temp, volt, sonar, fotocamera):
+    """
+    funzione di controlo delle variabili globali,
+    controlla se sono state modificate tutte
+    :param angle16: misura del angolo a 16
+    :param angle8: misura del angolo a 8
+    :param pitch: misura del pitch
+    :param roll: misura del roll
+    :param mag: misura del mag
+    :param acc: misura del acc
+    :param gyro: misura del gyro
+    :param temp: misura della temperatura
+    :param comando: variabile del comando da inviare
+    :param volt: misura della batteria
+    :param sonar: misura dei sonar
+    :return: True se sono modificate, False se sono ancora nulle
+    """
+    return angle16 is not None and angle8 is not None and pitch is not None and roll is not None and mag is not None and acc is not None and gyro is not None and temp is not None and volt is not None and sonar is not None and fotocamera is not None
 
-    commandIA = prologIA(commandolder, qrcode, fotocamera, switch, sonar, volt, lidar, angle16, angle8, pitch, roll,
-                         mag, acc, gyro, temp, oldangle)
 
-    if commandIA == "sinistra" or commandIA == "destra" or commandIA == "indietro":
-        oldangle = None
-
-    commandolder = commandIA
 
 
 def main():
     global commandIA
+    global commandolder, oldangle, commandIA, qrcode, fotocamera, switch, sonar, volt, lidar, angle8, angle16, pitch, roll, mag, acc, gyro, temp
     rospy.init_node("Prologo_IA_Node", disable_signals=True)
     prolog_pub = rospy.Publisher("prolog_ia", PyRobot.Prolog_IA_Node, queue_size=1)
     rospy.Subscriber("controller", PyRobot.Controller_Node, callback)
     r = rospy.Rate(1)
     while not rospy.is_shutdown():
-        if commandIA is not None:
-            prolog_msg.risposta = commandIA
-            commandIA = None
-            prolog_pub.publish(prolog_msg)
-            r.sleep()
+        if commandIA is None:
+            if ifNotNone(angle16,angle8,pitch,roll,mag,acc,gyro,temp,volt,sonar,fotocamera):
+                if commandolder == "correggi_a_destra" or commandolder == "correggi_a_sinistra" or oldangle is None:
+                    oldangle = angle8
+
+                    commandIA = prologIA(commandolder, qrcode, fotocamera, switch, sonar, volt, lidar, angle16, angle8, pitch,roll, mag, acc, gyro, temp, oldangle)
+
+                if commandIA == "sinistra" or commandIA == "destra" or commandIA == "indietro":
+                    oldangle = None
+
+                commandolder = commandIA
+                prolog_msg.risposta = commandIA
+                resetNone()
+                commandIA = None
+                prolog_pub.publish(prolog_msg)
+                r.sleep()
 
 
 if __name__ == '__main__':
