@@ -29,8 +29,9 @@ def resetvar():
     Funzione che setta le variabili a nullo per evitare l'invio di messaggi non completi.
     Lavora sulle variabili globali angle16, angle8, pitch, roll, mag, acc, gyro,
     temp, lidar18, comando, switch, sonar, volt, eureca e visione
+    :return: nulla
     """
-    global angle16, angle8, pitch, roll, mag, acc, gyro, temp, lidar18, switch, sonar, volt, eureca, visione, comando
+    global angle16, angle8, pitch, roll, mag, acc, gyro, temp, lidar18, switch, sonar, volt, eureca, visione, comando, risposta_prolog
 
     angle16 = None
     angle8 = None
@@ -47,6 +48,7 @@ def resetvar():
     volt = None
     eureca = None
     visione = None
+    risposta_prolog = None
 
 
 def callback_prolog(msg):
@@ -56,7 +58,10 @@ def callback_prolog(msg):
     :param msg: messagio ricevuto
     :return: nulla
     """
-    global comando
+    global comando, risposta_prolog
+
+    risposta_prolog = msg.risposta
+
     comando = ""
     risposta_prolog = msg.risposta
     if risposta_prolog == 'dritto':
@@ -74,7 +79,7 @@ def callback_prolog(msg):
     elif risposta_prolog == 'correggi_a_sinistra':
         comando = "u"
     elif risposta_prolog == 'attiva_lidar':
-        comando = "v"
+        comando = "s"
     elif risposta_prolog == 'fine':
         endfunction()
 
@@ -82,6 +87,7 @@ def callback_prolog(msg):
 def endfunction():
     """
     Funzione di fine programma. Si occupa di far terminare il Nodo Controller
+    :return: nulla
     """
     global comando
     rospy.signal_shutdown('Mission Complete')
@@ -91,6 +97,7 @@ def callback_switch(msg):
     """
     Funzione Callback che processa i dati inviati dai Nodo Motor_Switch
     :param msg: messaggio ROS dal Nodo Motor_Switch
+    :return: nulla
     """
     global switch
     switch = msg.switches
@@ -100,6 +107,7 @@ def callback_sonar_volt(msg):
     """
     Funzione Callback che processa i dati inviati dai Nodo Sonar_Volt
     :param msg: messaggio ROS dal Nodo Sonar_Volt
+    :return: nulla
     """
     global sonar, volt
     sonar = msg.sonar
@@ -127,6 +135,7 @@ def callback_mvcamera(msg):
     """
     Funzione Callback che processa i dati inviati dai Nodo MV_Camera
     :param msg: messaggio ROS dal Nodo MV_Camera
+    :return: nulla
     """
     global eureca
     eureca = msg.eureca
@@ -136,37 +145,42 @@ def callback_pi_camera(msg):
     """
     Funzione Callback che processa i dati inviati dai Nodo PI_Camera
     :param msg: messaggio ROS dal Nodo PI_Camera
+    :return: nulla
     """
     global visione
     visione = msg.visione
 
 
-def ifNotNone(angle16, angle8, pitch, roll, mag, acc, gyro, temp, volt, sonar, visione):
+def ifNotNone(angle16, angle8, pitch, roll, mag, acc, gyro, temp, volt, sonar, visione, risposta_prolog):
+
     """
     funzione di controlo delle variabili globali,
     controlla se sono state modificate tutte
-    :param angle16: misura del angolo a 16
-    :param angle8: misura del angolo a 8
-    :param pitch: misura del pitch
-    :param roll: misura del roll
-    :param mag: misura del mag
-    :param acc: misura del acc
-    :param gyro: misura del gyro
-    :param temp: misura della temperatura
-    :param comando: variabile del comando da inviare
-    :param volt: misura della batteria
-    :param sonar: misura dei sonar
+    :param angle16:
+    :param angle8:
+    :param pitch:
+    :param roll:
+    :param mag:
+    :param acc:
+    :param gyro:
+    :param temp:
+    :param volt:
+    :param sonar:
+    :param visione:
+    :param risposta_prolog:
     :return: True se sono modificate, False se sono ancora nulle
     """
-    return angle16 is not None and angle8 is not None and pitch is not None and roll is not None and mag is not None and acc is not None and gyro is not None and temp is not None and volt is not None and sonar is not None and visione is not None
+
+    return angle16 is not None and angle8 is not None and pitch is not None and roll is not None and mag is not None and acc is not None and gyro is not None and temp is not None and volt is not None and sonar is not None and visione is not None and risposta_prolog
 
 
 def main():
     """
     Funzione principale che si occupa di inizializzare il Nodo, i Pubblisher e i Subscriber. Si occupa anche di salvare
     i valori ricevuti dai vari Nodi nei mesaggi Controller_Node.msg e Controller_To_Lidar.msg.
+    :return: nulla
     """
-    global angle16, angle8, pitch, roll, mag, acc, gyro, temp, lidar18, switch, sonar, volt, eureca, visione, comando
+    global angle16, angle8, pitch, roll, mag, acc, gyro, temp, lidar18, switch, sonar, volt, eureca, visione, comando, risposta_prolog
     resetvar()
     # inizializzazione nodo Controller
     rospy.init_node("Controller_Node", disable_signals=True)
@@ -175,7 +189,7 @@ def main():
     controller_to_lidar_pub = rospy.Publisher("controller_To_Lidar", PyRobot.Controller_To_Lidar_Node, queue_size=1)
     controller_to_motor_pub = rospy.Publisher("controller_To_Motor", PyRobot.Controller_To_Motor_Node, queue_size=1)
     rospy.Subscriber("prolog", PyRobot.Prolog_IA_Node, callback_prolog)
-    rospy.Subscriber("switch", PyRobot.Motor_Switch_Node, callback_switch)
+    rospy.Subscriber("switches", PyRobot.Motor_Switch_Node, callback_switch)
     rospy.Subscriber("sonar_volt", PyRobot.Sonar_Volt_Node, callback_sonar_volt)
     rospy.Subscriber("mv_camera", PyRobot.MV_Camera_Node, callback_mvcamera)
     rospy.Subscriber("lidar_compass", PyRobot.Lidar_Compass_Node, callback_lidar_compass)
@@ -201,7 +215,7 @@ def main():
             if eureca == 'trovato':
                 controller_msg.qrcode = 1  # messaggio per il nodo Prolog per qrcode
 
-            if comando == 'v':  # messaggio per il Nodo  Compass_Servo_Lidar
+            if risposta_prolog == 'attiva_lidar':  # messaggio per il Nodo  Compass_Servo_Lidar
                 controller_to_lidar_msg.on_off_lidar = True
 
             if comando is not None:
