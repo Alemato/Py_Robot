@@ -104,9 +104,11 @@ def callback(msg):
     :return: nulla
     """
     global lidarvar, clientID, handle
-    lidarvar[0] = lidar(clientID, handle, +89)
-    for i in range(1, 19):
-        lidarvar[i] = lidar(clientID, handle, -10.0)
+    if msg.on_off_lidar:
+        lidarvar = [0.] * 18
+        lidarvar[0] = lidar(clientID, handle, +89)
+        for i in range(1, 19):
+            lidarvar[i] = lidar(clientID, handle, -10.0)
 
 
 def main():
