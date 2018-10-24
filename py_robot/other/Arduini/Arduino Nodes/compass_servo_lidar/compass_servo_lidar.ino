@@ -224,8 +224,6 @@ int readservo() {
 void loop() {
   // variabile array nella quale salvo le medie delle 18 porzioni
   int arraydist[18];
-  // setto il servo in posizione centrale
-  myservo.write(90);
   // calcolo i valori del Compass
   readcompass();
   // vedo se il Nodo Controller ha richiesto l'uso del lidar
@@ -243,6 +241,8 @@ void loop() {
     }
     // reimposto la variabile lidar a false per il prossimo utilizzo
     lidar = false;
+    // setto il servo in posizione centrale
+    myservo.write(90);
   }
   // funzione Publish ROS 
   pub_lidar_compass.publish(&lidar_compass_msg);
