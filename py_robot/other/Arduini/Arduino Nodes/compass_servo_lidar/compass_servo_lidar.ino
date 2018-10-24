@@ -57,12 +57,12 @@ void callback(const py_robot::Controller_To_Lidar_Node& msg) {
 }
 
 // funzione sottoscrizione di ROS
-ros::Subscriber<py_robot::Controller_To_Lidar_Node> lidar_sub("controller_pub", callback);
+ros::Subscriber<py_robot::Controller_To_Lidar_Node> lidar_sub("controller_To_Lidar", callback);
 // ROS custom message Lidar_Compass
 py_robot::Lidar_Compass_Node lidar_compass_msg;
 
 // ROS inizializzazione Pubblisher Lidar_Compass
-ros::Publisher pub_lidar_compass("lidar_compass_sub", &lidar_compass_msg);
+ros::Publisher pub_lidar_compass("lidar_compass", &lidar_compass_msg);
 
 
 
