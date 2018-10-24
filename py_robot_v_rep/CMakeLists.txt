@@ -53,13 +53,12 @@ add_message_files(
    Controller_Node.msg
    Lidar_Compass_Node.msg
    Motor_Switch_Node.msg
-   Prolog_Node.msg
+   Prolog_IA_Node.msg
    Sonar_Volt_Node.msg
-   Controller_To_Lidar_Node.msg
-   Controller_To_Motor_Node.msg
    MV_Camera_Node.msg
    Pi_Camera_Node.msg
-#   Message2.msg
+   Controller_To_Lidar_Node.msg
+   Controller_To_Motor_Node.msg
 )
 
 ## Generate services in the 'srv' folder
