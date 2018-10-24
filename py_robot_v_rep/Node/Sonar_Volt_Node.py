@@ -5,7 +5,7 @@ import numpy as np
 import rospy
 import py_robot_v_rep.msg as PyRobot
 
-sonar_volt_pub = PyRobot.Sonar_Volt_Node()
+sonar_volt_msg = PyRobot.Sonar_Volt_Node()
 oggetto = []
 distanza = []
 clientID = None
@@ -35,7 +35,7 @@ def oggetti(clientID):
     """
     global oggetto
     nomioggetti = ['Proximity_sensorCE', 'Proximity_sensorDX', 'Proximity_sensorSX']
-    for i in range(0, 4):
+    for i in range(0, 3):
         res, objecthandle = simxGetObjectHandle(clientID, nomioggetti[i], simx_opmode_blocking)
         simxReadProximitySensor(clientID, objecthandle, simx_opmode_streaming)
         if not res == 0:
@@ -84,10 +84,11 @@ def main():
     r = rospy.Rate(1)
 
     while not rospy.is_shutdown():
-        sonar_volt_pub.sonar = readproximity(clientID, newoggetti)
+        sonar_volt_msg.sonar = readproximity(clientID, newoggetti)
         distanza = []
-        sonar_volt_pub.volt = readvolt(13)
-        sonar_volt_pub.publish(sonar_volt_pub)
+        sonar_volt_msg.volt = readvolt(float(13))
+        sonar_volt_pub.publish(sonar_volt_msg)
+        rospy.loginfo(sonar_volt_msg)
         r.sleep()
 
 

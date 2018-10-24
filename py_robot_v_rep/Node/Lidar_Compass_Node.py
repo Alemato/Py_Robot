@@ -7,8 +7,8 @@ import rospy
 import py_robot_v_rep.msg as PyRobot
 
 oggetto = []
-lidar_compass = PyRobot.Lidar_Compass_Node()
-lidarvar = None
+lidar_compass_msg = PyRobot.Lidar_Compass_Node()
+lidarvar = [0.] * 18
 clientID = None
 handle = None
 
@@ -20,7 +20,7 @@ def connessione():
     """
     print('Program started')
     simxFinish(-1)  # just in case, close all opened connections
-    clientID = simxStart('127.0.0.1', 19999, True, True, 5000, 5)  # Connect to V-REP
+    clientID = simxStart('127.0.0.1', 19998, True, True, 5000, 5)  # Connect to V-REP
     if clientID == -1:
         print("Failed to connect to Remote API Server")
     else:
@@ -105,8 +105,8 @@ def callback(msg):
     """
     global lidarvar, clientID, handle
     lidarvar[0] = lidar(clientID, handle, +89)
-    for i in range(0, 179):
-        lidarvar[i + 1] = lidar(clientID, handle, -1.0)
+    for i in range(1, 19):
+        lidarvar[i] = lidar(clientID, handle, -10.0)
 
 
 def main():
@@ -114,22 +114,22 @@ def main():
     clientID = connessione()
     handle = oggetti(clientID)
     rospy.init_node("Lidar_Compass_Node")
-    rospy.Subscriber("lidar_trigger", PyRobot.Controller_Node, callback)
+    rospy.Subscriber("controller_To_Lidar", PyRobot.Controller_To_Lidar_Node, callback)
     lidar_pub = rospy.Publisher("lidar_compass", PyRobot.Lidar_Compass_Node, queue_size=1)
     r = rospy.Rate(1)
     while not rospy.is_shutdown():
-        lidar_compass.lidar = lidarvar
-        lidar_compass.angle16 = 0
-        lidar_compass.angle8 = 0
-        lidar_compass.pitch = 0
-        lidar_compass.roll = 0
-        lidar_compass.mag = [0, 0, 0, 0, 0, 0]
-        lidar_compass.acc = [0, 0, 0, 0, 0, 0]
-        lidar_compass.gyro = [0, 0, 0, 0, 0, 0]
-        lidar_compass.temp = 24
-        lidar_pub.publish(lidar_compass)
-        rospy.loginfo(lidar_compass)
-        lidarvar = []
+        lidar_compass_msg.lidar = lidarvar
+        lidar_compass_msg.angle16 = int(0)
+        lidar_compass_msg.angle8 = int(0)
+        lidar_compass_msg.pitch = int(0)
+        lidar_compass_msg.roll = int(0)
+        lidar_compass_msg.mag = [int(0), int(0), int(0), int(0), int(0), int(0)]
+        lidar_compass_msg.acc = [int(0), int(0), int(0), int(0), int(0), int(0)]
+        lidar_compass_msg.gyro = [int(0), int(0), int(0), int(0), int(0), int(0)]
+        lidar_compass_msg.temp = int(24)
+        lidar_pub.publish(lidar_compass_msg)
+        rospy.loginfo(lidar_compass_msg)
+        lidarvar = [0.] * 18
         r.sleep()
 
 

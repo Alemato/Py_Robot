@@ -22,7 +22,7 @@ def connessione():
     """
     print('Program started')
     simxFinish(-1)  # just in case, close all opened connections
-    clientID = simxStart('127.0.0.1', 19999, True, True, 5000, 5)  # Connect to V-REP
+    clientID = simxStart('127.0.0.1', 20001, True, True, 5000, 5)  # Connect to V-REP
     if clientID == -1:
         print("Failed to connect to Remote API Server")
     else:
@@ -117,11 +117,12 @@ def main():
     clientID = connessione()
     oggetto = oggetti(clientID)
     rospy.init_node("Pi_Camera_Node", disable_signals=True)
-    pi_camera_pub = rospy.Publisher("pi_camera_pub", PyRobot.Pi_Camera_Node, queue_size=1)
+    pi_camera_pub = rospy.Publisher("pi_camera", PyRobot.Pi_Camera_Node, queue_size=1)
     r = rospy.Rate(1)
     while not rospy.is_shutdown():
         pi_camera_msg.visione = imgs(immagine(clientID))
         pi_camera_pub.publish(pi_camera_msg)
+        rospy.loginfo(pi_camera_msg)
         r.sleep()
     # while (1):
     #     cv2.imshow('img', img)

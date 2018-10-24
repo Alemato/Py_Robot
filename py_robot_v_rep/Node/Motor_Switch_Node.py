@@ -7,7 +7,7 @@ import time
 import rospy
 
 
-switch_pub = PyRobot.Motor_Switch_Node()
+switch_msg = PyRobot.Motor_Switch_Node()
 clientID = None
 oggetto = []
 micros = []
@@ -161,66 +161,72 @@ def callback(msg):
     :return: nulla
     """
     global clientID, motors
-    if msg.vel == "a":
+    if msg.velo == "a":
         forward(clientID, motors, 1)
-    elif msg.vel == "b":
+    elif msg.velo == "b":
         forward(clientID, motors, 1.5)
-    elif msg.vel == "c":
+    elif msg.velo == "c":
         forward(clientID, motors, 2)
-    elif msg.vel == "d":
+    elif msg.velo == "d":
         forward(clientID, motors, 2.5)
 
     # dritto
-    elif msg.vel == "e":
+    elif msg.velo == "e":
         forward(clientID, motors, 3)
 
-    elif msg.vel == "f":
+    elif msg.velo == "f":
         forward(clientID, motors, 3.5)
-    elif msg.vel == "g":
+    elif msg.velo == "g":
         forward(clientID, motors, 4)
-    elif msg.vel == "h":
+    elif msg.velo == "h":
         forward(clientID, motors, 5)
 
     # indietro
-    elif msg.vel == "i":
+    elif msg.velo == "i":
         backward(clientID, motors, 1)
 
-    elif msg.vel == "l":
+    elif msg.velo == "l":
         backward(clientID, motors, 1.5)
-    elif msg.vel == "m":
+    elif msg.velo == "m":
         backward(clientID, motors, 2)
-    elif msg.vel == "n":
+    elif msg.velo == "n":
         backward(clientID, motors, 2.5)
-    elif msg.vel == "o":
+    elif msg.velo == "o":
         backward(clientID, motors, 3)
-    elif msg.vel == "p":
+    elif msg.velo == "p":
         left(clientID, motors)
         time.sleep(2)
+        forward(clientID, motors, 0)
 
     # sinistra
-    elif msg.vel == "q":
+    elif msg.velo == "q":
         left(clientID, motors)
         time.sleep(2)
+        forward(clientID, motors, 0)
 
     # destra
-    elif msg.vel == "r":
+    elif msg.velo == "r":
         right(clientID, motors)
         time.sleep(2)
+        forward(clientID, motors, 0)
 
     # stop
-    elif msg.vel == "s":
+    elif msg.velo == "s":
         forward(clientID, motors, 0)
 
     # correggi a destra
-    elif msg.vel == "t":
+    elif msg.velo == "t":
         left_correction(clientID, motors)
 
     # correggi a sinistra
-    elif msg.vel == "u":
+    elif msg.velo == "u":
         right_correction(clientID, motors)
 
     # attiva lidar
-    elif msg.vel == "v":
+    elif msg.velo == "v":
+        forward(clientID, motors, 0)
+
+    else:
         forward(clientID, motors, 0)
 
 
@@ -231,7 +237,7 @@ def main():
     micros = [newoggetti[0], newoggetti[1], newoggetti[2]]
     motors = [newoggetti[3], newoggetti[4], newoggetti[5], newoggetti[6]]
     rospy.init_node("Motor_Switch_Node")
-    rospy.Subscriber("motor", PyRobot.Controller_Node, callback)
+    rospy.Subscriber("controller_To_Motor", PyRobot.Controller_To_Motor_Node, callback)
     switch_pub = rospy.Publisher("switches", PyRobot.Motor_Switch_Node, queue_size=1)
     r = rospy.Rate(1)
 
@@ -239,8 +245,9 @@ def main():
         microswitch = micro(clientID)
         if microswitch[0] or microswitch[1] or microswitch[2]:
             forward(clientID, motors, 0)
-        switch_pub.switch = microswitch
-        switch_pub.publish(switch_pub.switch)
+        switch_msg.switches = microswitch
+        switch_pub.publish(switch_msg)
+        rospy.loginfo(switch_msg)
         stati = []
         r.sleep()
 
