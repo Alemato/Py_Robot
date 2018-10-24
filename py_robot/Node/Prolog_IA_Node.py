@@ -44,12 +44,12 @@ def prologIA(commandolder, qrcode, fotocamera, switch, sonar, volt, lidar, angle
     prolog.assertz("fotocamera(" + str(fotocamera) + ")")
 
     # qrcode 0 per false 1 per true
-    prolog.assertz("qrcode(" + str(qrcode) + ")")
+    prolog.assertz("qrcode(" + str(int(qrcode)) + ")")
 
     # mettere prima il destro cosi se sono 3 sonar uguali il sistema prendera il primo e quindi va avanti
-    prolog.assertz("sonar(sinistra, " + str(sonar[0]) + ")")
-    prolog.assertz("sonar(centro, " + str(sonar[1]) + ")")
-    prolog.assertz("sonar(destra, " + str(sonar[2]) + ")")
+    prolog.assertz("sonar(sinistra, " + str(int(sonar[0])) + ")")
+    prolog.assertz("sonar(centro, " + str(int(sonar[1])) + ")")
+    prolog.assertz("sonar(destra, " + str(int(sonar[2])) + ")")
 
     # switch
     prolog.assertz("switch(sinistra, " + str(switch[0]) + ")")
@@ -219,15 +219,17 @@ def prologIA(commandolder, qrcode, fotocamera, switch, sonar, volt, lidar, angle
         ####################
         # Esequzione Query #
         ####################
-
-        return list(prolog.query("commandlidar(Result)"))
+        result = list(prolog.query("commandlidar(Result)"))
+        prolog = None
+        return result
 
 
     #############################
     # Esequzione query generale #
     #############################
-
-    return list(prolog.query("command(Result)"))
+    result = list(prolog.query("command(Result)"))
+    prolog = None
+    return result
 
 
 def callback(msg):
