@@ -161,6 +161,7 @@ def callback(msg):
     :return: nulla
     """
     global clientID, motors
+    print msg.velo
     if msg.velo == "a":
         forward(clientID, motors, 1)
     elif msg.velo == "b":

@@ -8,7 +8,6 @@ prolog_msg = PyRobot.Prolog_IA_Node()
 
 commandolder = "avanti"
 oldangle = None
-commandIA = None
 
 
 # var global
@@ -27,7 +26,13 @@ acc = None
 gyro = None
 temp = None
 
+
 def resetNone():
+    """
+    Funzione per il reset delle variabili abientali
+    :return:
+    """
+    global qrcode, fotocamera, switch, sonar, volt, lidar, angle16, angle8, pitch, roll, mag, acc, gyro, temp
     qrcode = None
     fotocamera = None
     switch = None
@@ -45,10 +50,10 @@ def resetNone():
 
 
 
-def prologIA(commandolder, qrcode, fotocamera, switch, sonar, volt, lidar, angle16, angle8, pitch, roll, mag, acc, gyro,
+def prologIA(prolog, commandolder, qrcode, fotocamera, switch, sonar, volt, lidar, angle16, angle8, pitch, roll, mag, acc, gyro,
              temp, oldangle):
     """
-    funzione che esegue prolog
+    Funzione che esegue prolog
     :param commandolder:  vecchio comando di default e' avanti
     :param qrcode: 0 per non trovato 1 per trovato
     :param fotocamera: vale sinistra o destra o centro e identifica lo spazio libero
@@ -69,8 +74,6 @@ def prologIA(commandolder, qrcode, fotocamera, switch, sonar, volt, lidar, angle
     """
 
     print("entro")
-    # Inizializzazione Prolog
-    prolog = pyswip.Prolog()
 
     ###################
     # Creazione fatti #
@@ -123,8 +126,9 @@ def prologIA(commandolder, qrcode, fotocamera, switch, sonar, volt, lidar, angle
     # angolo vecchio
     prolog.assertz("oldangle8(" + str(oldangle) + ")")
 
-    #
+    # comando vecchio
     prolog.assertz("commandolder(" + commandolder + ")")
+
     # Creazione comandi
     prolog.assertz("command(avanti, 1)")
     prolog.assertz("command(destra, 2)")
@@ -175,17 +179,17 @@ def prologIA(commandolder, qrcode, fotocamera, switch, sonar, volt, lidar, angle
 
     # comando avanti
     prolog.assertz("command(X):- commandolder(O), O == avanti, switch(_), volt(Y), Y > 11, qrcode(Q), Q == 0, "
-                   "sonartrue(_), C is 3, command(X,C),!")
+                   "sonartrue(_), C is 1, command(X,C),!")
     prolog.assertz("command(X):- commandolder(O), O \== indietro, switch(_), volt(Y), Y > 11, qrcode(Q), Q == 0, "
-                   "sonar(U), U == centro, fotocamera(F), F == centro, C is 3, command(X,C),!")
+                   "sonar(U), U == centro, fotocamera(F), F == centro, C is 1, command(X,C),!")
     prolog.assertz("command(X):- commandolder(O), O \== indietro,switch(_), volt(Y), Y > 11, qrcode(Q), Q == 0, "
-                   "sonar(U), U == centro, C is 3, command(X,C),!")
+                   "sonar(U), U == centro, C is 1, command(X,C),!")
 
     # comando sinistra
     prolog.assertz("command(X):- commandolder(O), O \== indietro, switch(_), volt(Y), Y > 11, qrcode(Q), Q == 0, "
-                   "sonar(U), U == sinistra, fotocamera(F), F == sinistra, C is 1, command(X,C),!")
+                   "sonar(U), U == sinistra, fotocamera(F), F == sinistra, C is 3, command(X,C),!")
     prolog.assertz("command(X):- commandolder(O), O \== indietro, switch(_), volt(Y), Y > 11, qrcode(Q), Q == 0, "
-                   "sonar(U), U == sinistra, C is 1, command(X,C),!")
+                   "sonar(U), U == sinistra, C is 3, command(X,C),!")
 
     # comando destra
     prolog.assertz("command(X):- commandolder(O), O \== indietro, switch(_), volt(Y), Y > 11, qrcode(Q), Q == 0, "
@@ -241,11 +245,11 @@ def prologIA(commandolder, qrcode, fotocamera, switch, sonar, volt, lidar, angle
 
         # comando avanti
         prolog.assertz("commandlidar(X):-lidar(B), B < 121, B > 61, switch(_), volt(Y), Y > 11,qrcode(Q), Q == 0, "
-                       "C is 3, command(X,C),!")
+                       "C is 1, command(X,C),!")
 
         # comando sinistra
         prolog.assertz(
-            "commandlidar(X):-lidar(B), B > 120,switch(_), volt(Y), Y > 11,qrcode(Q), Q == 0, C is 1, command(X,C),!")
+            "commandlidar(X):-lidar(B), B > 120,switch(_), volt(Y), Y > 11,qrcode(Q), Q == 0, C is 3, command(X,C),!")
 
         # comando destra
         prolog.assertz(
@@ -257,19 +261,143 @@ def prologIA(commandolder, qrcode, fotocamera, switch, sonar, volt, lidar, angle
         ####################
         # Esequzione Query #
         ####################
-        result = list(prolog.query("commandlidar(Result)"))
-
+        return list(prolog.query("commandlidar(Result)"))
 
 
     #############################
     # Esequzione query generale #
     #############################
-    result1 = list(prolog.query("command(Result)"))
-    prolog = None
-    if commandolder == "attiva_lidar":
-        return result
-    else:
-        return result1
+    print(list(prolog.query("sonar(X)")))
+    print(list(prolog.query("commandolder(X)")))
+    result = list(prolog.query("command(Result)"))
+
+    ##################################################
+    # Eliminazione di tutti i fatti e regolle creati #
+    ##################################################
+    # fotocomera
+    prolog.retract("fotocamera(" + str(fotocamera) + ")")
+
+    # qrcode 0 per false 1 per true
+    prolog.retract("qrcode(" + str(qrcode) + ")")
+
+    # mettere prima il destro cosi se sono 3 sonar uguali il sistema prendera il primo e quindi va avanti
+    prolog.retract("sonar(sinistra, " + str(sonar[0]) + ")")
+    prolog.retract("sonar(centro, " + str(sonar[1]) + ")")
+    prolog.retract("sonar(destra, " + str(sonar[2]) + ")")
+
+    # switch
+    prolog.retract("switch(sinistra, " + str(switch[0]) + ")")
+    prolog.retract("switch(centro, " + str(switch[1]) + ")")
+    prolog.retract("switch(destra, " + str(switch[2]) + ")")
+
+    # volt
+    prolog.retract("volt(" + str(volt) + ")")
+
+    # compass
+    prolog.retract("angle16(" + str(angle16) + ")")
+    prolog.retract("angle8(" + str(angle8) + ")")
+    prolog.retract("pitch(" + str(pitch) + ")")
+    prolog.retract("roll(" + str(roll) + ")")
+    prolog.retract("mag(xhigh, " + str(mag[0]) + ")")
+    prolog.retract("mag(xlow, " + str(mag[1]) + ")")
+    prolog.retract("mag(yhigh, " + str(mag[2]) + ")")
+    prolog.retract("mag(ylow, " + str(mag[3]) + ")")
+    prolog.retract("mag(zhigh, " + str(mag[4]) + ")")
+    prolog.retract("mag(zlow, " + str(mag[5]) + ")")
+    prolog.retract("acc(xhigh, " + str(acc[0]) + ")")
+    prolog.retract("acc(xlow, " + str(acc[1]) + ")")
+    prolog.retract("acc(yhigh, " + str(acc[2]) + ")")
+    prolog.retract("acc(ylow, " + str(acc[3]) + ")")
+    prolog.retract("acc(zhigh, " + str(acc[4]) + ")")
+    prolog.retract("acc(zlow, " + str(acc[5]) + ")")
+    prolog.retract("gyro(xhigh, " + str(gyro[0]) + ")")
+    prolog.retract("gyro(xlow, " + str(gyro[1]) + ")")
+    prolog.retract("gyro(yhigh, " + str(gyro[2]) + ")")
+    prolog.retract("gyro(ylow, " + str(gyro[3]) + ")")
+    prolog.retract("gyro(zhigh, " + str(gyro[4]) + ")")
+    prolog.retract("gyro(zlow, " + str(gyro[5]) + ")")
+    prolog.retract("temp(" + str(temp) + ")")
+
+    # angolo vecchio
+    prolog.retract("oldangle8(" + str(oldangle) + ")")
+
+    # comando vecchio
+    prolog.retract("commandolder(" + commandolder + ")")
+
+    # Creazione comandi
+    prolog.retract("command(avanti, 1)")
+    prolog.retract("command(destra, 2)")
+    prolog.retract("command(sinistra, 3)")
+    prolog.retract("command(indietro, 4)")
+    prolog.retract("command(stop, 5)")
+    prolog.retract("command(fine, 6)")
+    prolog.retract("command(batteria, 7)")
+    prolog.retract("command(correggi_a_destra, 8)")
+    prolog.retract("command(correggi_a_sinistra, 9)")
+    prolog.retract("command(attiva_lidar, 10)")
+
+    #############################
+    # Creazione regole generali #
+    #############################
+
+    # regola per gli switch false se sbatte true se non sbatte
+    prolog.retract("switch(_):- switch(sinistra,X), switch(centro,Y), switch(destra, Z), X == 0, Y == 0, Z == 0, !")
+
+    # regola per i sonar, serve per far cambiare la direzione predefinita dritto a una certa distanza da un possibile ostacolo
+    prolog.retract("sonartrue(_):- sonar(destra, A), sonar(centro, B), sonar(sinistra, C),  A > 30, B > 30, C > 30, !")
+
+    # regola per capire quale e' il sonar con la distanza maggiore
+    prolog.retract("sonar(Y) :- sonar(centro, A), sonar(destra, B), sonar(sinistra, C), D is max(A, B), X is max(D, "
+                   "C), sonar(Y, X),!")
+
+    # comando batteria
+    prolog.retract("command(X):- volt(Y), Y < 11, C is 7, command(X, C),!")
+
+    # comando fine
+    prolog.retract("command(X):- qrcode(1), C is 6, command(X,C),!")
+
+    # comando attiva lidar
+    prolog.retract("command(X):- commandolder(O), O \== indietro, switch(_,1), volt(Y), Y > 11, qrcode(Q), Q == 0, "
+                   "C is 10, command(X,C),!")
+
+    # comando coregi a destra
+    prolog.retract("command(X):-commandolder(O), O == avanti, switch(_), volt(Y), Y > 11, qrcode(Q), Q == 0, "
+                   "sonartrue(_), angle8(A), oldangle8(B), S is A-B, S > 10, C is 8, command(X, C),!")
+
+    # comando coregi a sinistra
+    prolog.retract("command(X):-commandolder(O), O == avanti, switch(_), volt(Y), Y > 11, qrcode(Q), Q == 0, "
+                   "sonartrue(_), angle8(A), oldangle8(B), S is B-A, S > 10, C is 9, command(X, C),!")
+
+    # comando indietro
+    prolog.retract("command(X):- commandolder(O), O \== indietro, \+ sonartrue(_), volt(Y), Y > 11, qrcode(Q), Q == 0, "
+                   "C is 4, command(X,C),!")
+
+    # comando avanti
+    prolog.retract("command(X):- commandolder(O), O == avanti, switch(_), volt(Y), Y > 11, qrcode(Q), Q == 0, "
+                   "sonartrue(_), C is 1, command(X,C),!")
+    prolog.retract("command(X):- commandolder(O), O \== indietro, switch(_), volt(Y), Y > 11, qrcode(Q), Q == 0, "
+                   "sonar(U), U == centro, fotocamera(F), F == centro, C is 1, command(X,C),!")
+    prolog.retract("command(X):- commandolder(O), O \== indietro,switch(_), volt(Y), Y > 11, qrcode(Q), Q == 0, "
+                   "sonar(U), U == centro, C is 1, command(X,C),!")
+
+    # comando sinistra
+    prolog.retract("command(X):- commandolder(O), O \== indietro, switch(_), volt(Y), Y > 11, qrcode(Q), Q == 0, "
+                   "sonar(U), U == sinistra, fotocamera(F), F == sinistra, C is 3, command(X,C),!")
+    prolog.retract("command(X):- commandolder(O), O \== indietro, switch(_), volt(Y), Y > 11, qrcode(Q), Q == 0, "
+                   "sonar(U), U == sinistra, C is 3, command(X,C),!")
+
+    # comando destra
+    prolog.retract("command(X):- commandolder(O), O \== indietro, switch(_), volt(Y), Y > 11, qrcode(Q), Q == 0, "
+                   "sonar(U), U == destra, fotocamera(F), F == destra, C is 2, command(X,C),!")
+    prolog.retract("command(X):- commandolder(O), O \== indietro, switch(_), volt(Y), Y > 11, qrcode(Q), Q == 0, "
+                   "sonar(U), U == destra, C is 2, command(X,C),!")
+
+    # comando stop
+    prolog.retract("command(X):- C is 5, command(X,C),!")
+
+
+    return result
+
 
 def callback(msg):
     """
@@ -277,14 +405,16 @@ def callback(msg):
     :param msg: messaggio ros dal controller
     :return: nulla
     """
-    global commandolder, oldangle, commandIA, qrcode, fotocamera, switch,sonar,volt,lidar,angle8,angle16,pitch,roll,mag,acc,gyro,temp
+    global commandolder, oldangle, commandIA, qrcode, fotocamera, switch, sonar, volt,\
+        lidar, angle8, angle16, pitch, roll, mag, acc, gyro, temp
     qrcode = msg.qrcode
     fotocamera = msg.visione
     switch = msg.switches
     switch[0] = int(switch[0])
     switch[1] = int(switch[1])
     switch[2] = int(switch[2])
-    sonar = msg.sonar
+    sonare = msg.sonar
+    sonar = (sonare[0] * 100, sonare[1] * 100, sonare[2] * 100)
     volt = msg.volt
     lidar = msg.lidar
     angle16 = msg.angle16
@@ -296,52 +426,67 @@ def callback(msg):
     gyro = msg.gyro
     temp = msg.temp
 
-def ifNotNone(angle16, angle8, pitch, roll, mag, acc, gyro, temp, volt, sonar, fotocamera):
+
+def ifNotNone(qrcode, fotocamera, switch, sonar, volt, lidar, angle16, angle8, pitch, roll, mag, acc, gyro, temp):
     """
-    funzione di controlo delle variabili globali,
+    Funzione di controlo delle variabili globali,
     controlla se sono state modificate tutte
-    :param angle16: misura del angolo a 16
-    :param angle8: misura del angolo a 8
-    :param pitch: misura del pitch
-    :param roll: misura del roll
-    :param mag: misura del mag
-    :param acc: misura del acc
-    :param gyro: misura del gyro
-    :param temp: misura della temperatura
-    :param comando: variabile del comando da inviare
-    :param volt: misura della batteria
-    :param sonar: misura dei sonar
-    :return: True se sono modificate, False se sono ancora nulle
+    :param qrcode:
+    :param fotocamera:
+    :param switch:
+    :param sonar:
+    :param volt:
+    :param lidar:
+    :param angle16:
+    :param angle8:
+    :param pitch:
+    :param roll:
+    :param mag:
+    :param acc:
+    :param gyro:
+    :param temp:
+    :return: True se non sono None e False se sono None
     """
-    return angle16 is not None and angle8 is not None and pitch is not None and roll is not None and mag is not None and acc is not None and gyro is not None and temp is not None and volt is not None and sonar is not None and fotocamera is not None
-
-
+    return qrcode is not None and fotocamera is not None and switch is not None and sonar is not None and\
+           volt is not None and lidar is not None and angle16 is not None and angle8 is not None and\
+           pitch is not None and roll is not None and mag is not None and acc is not None and\
+           gyro is not None and temp is not None
 
 
 def main():
-    global commandIA
-    global commandolder, oldangle, commandIA, qrcode, fotocamera, switch, sonar, volt, lidar, angle8, angle16, pitch, roll, mag, acc, gyro, temp
+    global commandolder, oldangle, commandIA, qrcode, fotocamera, switch, sonar,\
+        volt, lidar, angle8, angle16, pitch, roll, mag, acc, gyro, temp
+    commandIA = ''
     rospy.init_node("Prologo_IA_Node", disable_signals=True)
     prolog_pub = rospy.Publisher("prolog_ia", PyRobot.Prolog_IA_Node, queue_size=1)
     rospy.Subscriber("controller", PyRobot.Controller_Node, callback)
-    r = rospy.Rate(1)
+    r = rospy.Rate(10)
     while not rospy.is_shutdown():
-        if commandIA is None:
-            if ifNotNone(angle16,angle8,pitch,roll,mag,acc,gyro,temp,volt,sonar,fotocamera):
-                if commandolder == "correggi_a_destra" or commandolder == "correggi_a_sinistra" or oldangle is None:
+        if commandIA == '':
+            if ifNotNone(qrcode, fotocamera, switch, sonar, volt, lidar,
+                         angle16, angle8, pitch, roll, mag, acc, gyro, temp):
+
+                # Inizializzazione Prolog
+                prolog = pyswip.Prolog()
+
+                if commandolder == "correggi_a_destra" or\
+                        commandolder == "correggi_a_sinistra" or oldangle is None:
                     oldangle = angle8
 
-                    commandIA = prologIA(commandolder, qrcode, fotocamera, switch, sonar, volt, lidar, angle16, angle8, pitch,roll, mag, acc, gyro, temp, oldangle)
-                    print commandIA
+                commandIA = prologIA(prolog, commandolder, qrcode, fotocamera, switch, sonar, volt,
+                                     lidar, angle16, angle8, pitch, roll, mag, acc, gyro, temp, oldangle)
+
                 if commandIA == "sinistra" or commandIA == "destra" or commandIA == "indietro":
                     oldangle = None
 
-                commandolder = commandIA
-                prolog_msg.risposta = commandIA
-                resetNone()
-                commandIA = None
+                commandolder = None
+                prolog = None
+                commandolder = commandIA[0]['Result']
+                prolog_msg.risposta = commandIA[0]['Result']
                 prolog_pub.publish(prolog_msg)
                 rospy.loginfo(prolog_msg)
+                commandIA = ''
+                resetNone()
                 r.sleep()
 
 

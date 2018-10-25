@@ -60,7 +60,7 @@ def callback_prolog(msg):
     comando = ""
     risposta_prolog = msg.risposta
     print("prolog")
-    if risposta_prolog == 'dritto':
+    if risposta_prolog == 'avanti':
         comando = "e"
     elif risposta_prolog == 'destra':
         comando = "r"
@@ -78,6 +78,8 @@ def callback_prolog(msg):
         comando = "v"
     elif risposta_prolog == 'fine':
         endfunction()
+    else:
+        comando = 's'
 
 
 def endfunction():
@@ -182,7 +184,7 @@ def main():
     controller_pub = rospy.Publisher("controller", PyRobot.Controller_Node, queue_size=1)
     controller_to_lidar_pub = rospy.Publisher("controller_To_Lidar", PyRobot.Controller_To_Lidar_Node, queue_size=1)
     controller_to_motor_pub = rospy.Publisher("controller_To_Motor", PyRobot.Controller_To_Motor_Node, queue_size=1)
-    rospy.Subscriber("prolog", PyRobot.Prolog_IA_Node, callback_prolog)
+    rospy.Subscriber("prolog_ia", PyRobot.Prolog_IA_Node, callback_prolog)
     rospy.Subscriber("switches", PyRobot.Motor_Switch_Node, callback_switch)
     rospy.Subscriber("sonar_volt", PyRobot.Sonar_Volt_Node, callback_sonar_volt)
     rospy.Subscriber("mv_camera", PyRobot.MV_Camera_Node, callback_mvcamera)
