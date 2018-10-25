@@ -123,6 +123,8 @@ def prologIA(commandolder, qrcode, fotocamera, switch, sonar, volt, lidar, angle
     # angolo vecchio
     prolog.assertz("oldangle8(" + str(oldangle) + ")")
 
+    #
+    prolog.assertz("commandolder(" + commandolder + ")")
     # Creazione comandi
     prolog.assertz("command(avanti, 1)")
     prolog.assertz("command(destra, 2)")
@@ -293,7 +295,6 @@ def callback(msg):
     acc = msg.acc
     gyro = msg.gyro
     temp = msg.temp
-    print (msg)
 
 def ifNotNone(angle16, angle8, pitch, roll, mag, acc, gyro, temp, volt, sonar, fotocamera):
     """
@@ -331,7 +332,7 @@ def main():
                     oldangle = angle8
 
                     commandIA = prologIA(commandolder, qrcode, fotocamera, switch, sonar, volt, lidar, angle16, angle8, pitch,roll, mag, acc, gyro, temp, oldangle)
-
+                    print commandIA
                 if commandIA == "sinistra" or commandIA == "destra" or commandIA == "indietro":
                     oldangle = None
 
@@ -340,6 +341,7 @@ def main():
                 resetNone()
                 commandIA = None
                 prolog_pub.publish(prolog_msg)
+                rospy.loginfo(prolog_msg)
                 r.sleep()
 
 

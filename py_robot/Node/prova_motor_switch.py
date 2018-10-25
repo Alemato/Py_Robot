@@ -14,7 +14,7 @@ def callback(msg):
 
 def main():
     rospy.init_node('Motor_Switch_Node')
-    rospy.Subscriber("controller", PyRobot.Controller_Node, callback)
+    rospy.Subscriber("controller", PyRobot.Controller_To_Motor_Node, callback)
     switch_pub = rospy.Publisher("switches", PyRobot.Motor_Switch_Node, queue_size=1)
     r = rospy.Rate(1)
     while not rospy.is_shutdown():
