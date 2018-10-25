@@ -1,6 +1,6 @@
 <launch>
 	<node pkg="py_robot" type="Prolog_IA_Node.py" name="Prolog_IA_Node" output="screen">
 	</node>
-	<node pkg="py_robot" type="PI_Camera.py" name="PI_Camera" output="screen">
+	<node pkg="py_robot" type="Opencv_Node.py" name="Opencv_Node" output="screen">
 	</node>
 </launch>

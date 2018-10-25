@@ -26,6 +26,7 @@ volt = None
 eureca = None
 visione = None
 launch = None
+risposta_prolog = None
 
 
 def resetvar():
@@ -95,7 +96,8 @@ def startfunction():
     """
     uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
     roslaunch.configure_logging(uuid)
-    launch = roslaunch.parent.ROSLaunchParent(uuid, ["/home/stefano/catkin_ws/src/py_robot/launch/node_launcher.launch"]) # qui da aggiornare con il path del file launch
+    launch = roslaunch.parent.ROSLaunchParent(uuid, [
+        "/home/stefano/catkin_ws/src/py_robot/launch/node_launcher.launch"])  # qui da aggiornare con il path del file launch
     launch.start()
     rospy.loginfo("started")
 
@@ -119,6 +121,7 @@ def callback_switch(msg):
     """
     global switch
     switch = msg.switches
+    rospy.loginfo(switch)
 
 
 def callback_sonar_volt(msg):
@@ -169,8 +172,7 @@ def callback_pi_camera(msg):
     visione = msg.visione
 
 
-def ifNotNone(angle16, angle8, pitch, roll, mag, acc, gyro, temp, volt, sonar, visione, risposta_prolog):
-
+def ifNotNone(angle16, angle8, pitch, roll, mag, acc, gyro, temp, volt, sonar, visione, risposta_prolog, switch):
     """
     funzione di controlo delle variabili globali,
     controlla se sono state modificate tutte
@@ -189,7 +191,7 @@ def ifNotNone(angle16, angle8, pitch, roll, mag, acc, gyro, temp, volt, sonar, v
     :return: True se sono modificate, False se sono ancora nulle
     """
 
-    return angle16 is not None and angle8 is not None and pitch is not None and roll is not None and mag is not None and acc is not None and gyro is not None and temp is not None and volt is not None and sonar is not None and visione is not None and risposta_prolog
+    return angle16 is not None and angle8 is not None and pitch is not None and roll is not None and mag is not None and acc is not None and gyro is not None and temp is not None and volt is not None and sonar is not None and visione is not None and risposta_prolog is not None and switch is not None
 
 
 def main():
@@ -199,7 +201,6 @@ def main():
     :return: nulla
     """
     global angle16, angle8, pitch, roll, mag, acc, gyro, temp, lidar18, switch, sonar, volt, eureca, visione, comando, risposta_prolog
-    resetvar()
     # inizializzazione nodo Controller
     rospy.init_node("Controller_Node", disable_signals=True)
     startfunction()
@@ -215,7 +216,7 @@ def main():
     rospy.Subscriber("pi_camera", PyRobot.Pi_Camera_Node, callback_pi_camera)
     r = rospy.Rate(1)
     while not rospy.is_shutdown():
-        if ifNotNone(angle16, angle8, pitch, roll, mag, acc, gyro, temp, volt, sonar, visione, risposta_prolog):
+        if ifNotNone(angle16, angle8, pitch, roll, mag, acc, gyro, temp, volt, sonar, visione, risposta_prolog, switch):
             controller_msg.lidar = lidar18  # messaggio per il nodo Prolog per distanze lidar
             controller_msg.angle16 = angle16  # messaggio per il nodo Prolog per angle16
             controller_msg.angle8 = angle8  # messaggio per il nodo Prolog per angle8
