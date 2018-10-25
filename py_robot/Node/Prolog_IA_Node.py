@@ -71,15 +71,14 @@ def prologIA(commandolder, qrcode, fotocamera, switch, sonar, volt, lidar, angle
     print("entro")
     # Inizializzazione Prolog
     prolog = pyswip.Prolog()
-    prolog.assertz("ciao(mario, antonio)")
-    print prolog
+
     ###################
     # Creazione fatti #
     ###################
 
     # fotocomera
     prolog.assertz("fotocamera(" + str(fotocamera) + ")")
-    print ("qui")
+
     # qrcode 0 per false 1 per true
     prolog.assertz("qrcode(" + str(qrcode) + ")")
 
@@ -257,17 +256,18 @@ def prologIA(commandolder, qrcode, fotocamera, switch, sonar, volt, lidar, angle
         # Esequzione Query #
         ####################
         result = list(prolog.query("commandlidar(Result)"))
-        prolog = None
-        return result
+
 
 
     #############################
     # Esequzione query generale #
     #############################
-    result = list(prolog.query("command(Result)"))
+    result1 = list(prolog.query("command(Result)"))
     prolog = None
-    return result
-
+    if commandolder == "attiva_lidar":
+        return result
+    else:
+        return result1
 
 def callback(msg):
     """

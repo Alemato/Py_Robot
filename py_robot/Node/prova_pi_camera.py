@@ -15,6 +15,7 @@ def main():
     while not rospy.is_shutdown():
         pi_camera.visione = random.choice(['dritto', 'destra', 'sinistra'])
         pi_camera_pub.publish(pi_camera)
+        rospy.loginfo(pi_camera)
         r.sleep()
 
 

@@ -12,7 +12,7 @@ def talker():
     pub = rospy.Publisher('lidar_compass', PyRobot.Lidar_Compass_Node, queue_size=1)
     rate = rospy.Rate(10)  # 10hz
     while not rospy.is_shutdown():
-        sonar_msg.lidar = [random.randint(0, 100) for x in range(0, 181)]
+        sonar_msg.lidar = [random.randint(0, 100) for x in range(0, 18)]
         sonar_msg.angle16 = random.randint(0, 16)
         sonar_msg.angle8 = random.randint(0, 10)
         sonar_msg.pitch = random.randint(0, 7)
@@ -22,6 +22,7 @@ def talker():
         sonar_msg.gyro = [random.randint(0, 6) for x in range(0, 6)]
         sonar_msg.temp = random.randint(0, 24)
         pub.publish(sonar_msg)
+        rospy.loginfo(sonar_msg)
 
         rate.sleep()
 

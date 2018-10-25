@@ -15,11 +15,12 @@ def callback(msg):
 def main():
     rospy.init_node('Motor_Switch_Node')
     rospy.Subscriber("controller", PyRobot.Controller_Node, callback)
-    switch_pub = rospy.Publisher("switch", PyRobot.Motor_Switch_Node, queue_size=1)
+    switch_pub = rospy.Publisher("switches", PyRobot.Motor_Switch_Node, queue_size=1)
     r = rospy.Rate(1)
     while not rospy.is_shutdown():
-        switch.switches = [random.choice([True, False]), random.choice([True, False]), random.choice([True, False])]
+        switch.switches = [bool(random.choice([True, False])), bool(random.choice([True, False])), bool(random.choice([True, False]))]
         switch_pub.publish(switch)
+        rospy.loginfo(switch)
         r.sleep()
 
 

@@ -17,7 +17,7 @@ gyro = [None for x in range(0, 6)]
 temp = None
 lidar18 = [None for x in range(0, 180)]
 comando = None
-switch = [None for x in range(0, 3)]
+switch= [None for x in range(0, 3)]
 sonar = [None for x in range(0, 3)]
 volt = None
 eureca = None
@@ -95,6 +95,7 @@ def callback_switch(msg):
     """
     global switch
     switch = msg.switches
+    print(type(msg.switches))
     print("switch")
 
 
@@ -147,7 +148,7 @@ def callback_pi_camera(msg):
     print ("pi_camera")
 
 
-def ifNotNone(angle16, angle8, pitch, roll, mag, acc, gyro, temp, volt, sonar, visione):
+def ifNotNone(switch, angle16, angle8, pitch, roll, mag, acc, gyro, temp, volt, sonar, visione):
     """
     funzione di controlo delle variabili globali,
     controlla se sono state modificate tutte
@@ -164,7 +165,8 @@ def ifNotNone(angle16, angle8, pitch, roll, mag, acc, gyro, temp, volt, sonar, v
     :param sonar: misura dei sonar
     :return: True se sono modificate, False se sono ancora nulle
     """
-    return angle16 is not None and angle8 is not None and pitch is not None and roll is not None and mag is not None and acc is not None and gyro is not None and temp is not None and volt is not None and sonar is not None and visione is not None
+    return not switch == [None, None,
+                          None] and angle16 is not None and angle8 is not None and pitch is not None and roll is not None and mag is not None and acc is not None and gyro is not None and temp is not None and volt is not None and sonar is not None and visione is not None
 
 
 def main():
@@ -173,7 +175,7 @@ def main():
     i valori ricevuti dai vari Nodi nei mesaggi Controller_Node.msg e Controller_To_Lidar.msg.
     """
     global angle16, angle8, pitch, roll, mag, acc, gyro, temp, lidar18, switch, sonar, volt, eureca, visione, comando
-    resetvar()
+    #resetvar()
     # inizializzazione nodo Controller
     rospy.init_node("Controller_Node", disable_signals=True)
     # inizializzazioni Publisher e Subsciber
@@ -188,8 +190,8 @@ def main():
     rospy.Subscriber("pi_camera", PyRobot.Pi_Camera_Node, callback_pi_camera)
     r = rospy.Rate(1)
     while not rospy.is_shutdown():
-        if ifNotNone(angle16, angle8, pitch, roll, mag, acc, gyro, temp, volt, sonar, visione):
-            print ("dentro")
+        if ifNotNone(switch, angle16, angle8, pitch, roll, mag, acc, gyro, temp, volt, sonar, visione):
+            print (switch)
             controller_msg.lidar = lidar18    # messaggio per il nodo Prolog per distanze lidar
             controller_msg.angle16 = angle16  # messaggio per il nodo Prolog per angle16
             controller_msg.angle8 = angle8    # messaggio per il nodo Prolog per angle8
