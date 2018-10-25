@@ -81,8 +81,6 @@ long switchsensor(int switchpin) {
       VaiAvanti(0, 2000);
       // indietro per ___ secondi
       VaiIndietro(80, 2000);
-      // stop
-      VaiAvanti(0, 2000);
       // ritorna 0 se lo switch non è stato attivato
       return 0;
     }
