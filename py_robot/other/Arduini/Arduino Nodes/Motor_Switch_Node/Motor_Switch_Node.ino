@@ -78,9 +78,9 @@ long switchsensor(int switchpin) {
     if (digitalRead(switchpin) == HIGH) {
       // procedura da attuare dopo che uno degli switch viene attivato
       // stop
-      VaiAvanti(0, 2000);
+      // VaiAvanti(0, 2000);
       // indietro per ___ secondi
-      VaiIndietro(80, 2000);
+      // VaiIndietro(80, 2000);
       // ritorna 0 se lo switch non è stato attivato
       return 0;
     }
@@ -215,6 +215,13 @@ void loop() {
   switches.switches[2] = switchsensor(switchRight);
   // funzione Publish ROS 
   switch_pub.publish(&switches);
+      // procedura da attuare dopo che uno degli switch viene attivato
+  if(switches.switches[0] == 0 || switches.switches[1] == 0 || switches.switches[2] == 0){
+    // stop
+    VaiAvanti(0, 2000);
+    // indietro per ___ secondi
+    VaiIndietro(80, 2000);
+  }
   // attesa eventi ROS 
   nh.spinOnce();
   delay(10);

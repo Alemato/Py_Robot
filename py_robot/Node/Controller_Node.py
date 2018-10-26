@@ -227,7 +227,6 @@ def main():
             controller_msg.gyro = gyro  # messaggio per il nodo Prolog per gyro
             controller_msg.temp = temp  # messaggio per il nodo Prolog per temp
             controller_msg.switches = switch  # messaggio per il nodo Prolog per switch
-            # controller_msg.velo = comando  # messaggio per il nodo Motor_Switch per Motor
             controller_msg.volt = volt  # messaggio per il nodo Prolog per volt
             controller_msg.sonar = sonar  # messaggio per il nodo Prolog per sonar
             controller_msg.visione = visione  # messaggio per il nodo Prolog per Py Camera
