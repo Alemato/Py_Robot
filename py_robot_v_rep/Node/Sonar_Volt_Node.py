@@ -34,7 +34,7 @@ def oggetti(clientID):
     :return: oggetto
     """
     global oggetto
-    nomioggetti = ['Proximity_sensorCE', 'Proximity_sensorDX', 'Proximity_sensorSX']
+    nomioggetti = ['Proximity_sensorSX', 'Proximity_sensorCE', 'Proximity_sensorDX']
     for i in range(0, 3):
         res, objecthandle = simxGetObjectHandle(clientID, nomioggetti[i], simx_opmode_blocking)
         simxReadProximitySensor(clientID, objecthandle, simx_opmode_streaming)
@@ -80,8 +80,8 @@ def main():
     clientID = connessione()
     newoggetti = oggetti(clientID)
     rospy.init_node("Sonar_Volt_Node")
-    sonar_volt_pub = rospy.Publisher("sonar_volt", PyRobot.Sonar_Volt_Node, queue_size=1)
-    r = rospy.Rate(1)
+    sonar_volt_pub = rospy.Publisher("sonar_volt", PyRobot.Sonar_Volt_Node, queue_size=0)
+    r = rospy.Rate(0.5)
 
     while not rospy.is_shutdown():
         sonar_volt_msg.sonar = readproximity(clientID, newoggetti)
