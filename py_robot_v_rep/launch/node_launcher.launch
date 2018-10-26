@@ -7,6 +7,6 @@
 	</node>
 	<node pkg="py_robot_v_rep" type="Opencv_Node.py" name="Opencv_Node" output="screen">
 	</node>
-	<node pkg="py_robot_v_rep" type="Controller_Node.py" name="Controller_Node" output="screen">
-	</node>
+	<!--<node pkg="py_robot_v_rep" type="Controller_Node.py" name="Controller_Node" output="screen">-->
+	<!--</node>-->
 </launch>

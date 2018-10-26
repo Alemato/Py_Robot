@@ -1,7 +1,11 @@
 #! /usr/bin/python
 import rospy
 import py_robot.msg as PyRobot
-
+import roslaunch.rlutil
+import roslaunch.parent
+import roslaunch
+import time
+import os
 
 controller_msg = PyRobot.Controller_Node()
 controller_to_lidar_msg = PyRobot.Controller_To_Lidar_Node()
@@ -17,11 +21,12 @@ gyro = [None for x in range(0, 6)]
 temp = None
 lidar18 = [None for x in range(0, 180)]
 comando = None
-switch= [None for x in range(0, 3)]
+switch = [None for x in range(0, 3)]
 sonar = [None for x in range(0, 3)]
 volt = None
 eureca = None
 visione = None
+launch = None
 
 
 def resetvar():
@@ -82,11 +87,28 @@ def callback_prolog(msg):
         comando = 's'
 
 
+def startfunction():
+    """
+    Funzione di inizio programma. Si occupa di far partire i nodi
+    :return: nulla
+    """
+    path = os.getcwd()
+    uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
+    roslaunch.configure_logging(uuid)
+    launch = roslaunch.parent.ROSLaunchParent(uuid, [
+         path + "/catkin_ws/src/py_robot_v_rep/launch/node_launcher.launch"])  # qui da aggiornare con il path del file launch
+    launch.start()
+    rospy.loginfo("started")
+
+
 def endfunction():
     """
     Funzione di fine programma. Si occupa di far terminare il Nodo Controller
+    :return: nulla
     """
     global comando
+    launch.shutdown()
+    time.sleep(1)
     rospy.signal_shutdown('Mission Complete')
 
 
@@ -177,9 +199,10 @@ def main():
     i valori ricevuti dai vari Nodi nei mesaggi Controller_Node.msg e Controller_To_Lidar.msg.
     """
     global angle16, angle8, pitch, roll, mag, acc, gyro, temp, lidar18, switch, sonar, volt, eureca, visione, comando
-    #resetvar()
+    # resetvar()
     # inizializzazione nodo Controller
     rospy.init_node("Controller_Node", disable_signals=True)
+    startfunction()
     # inizializzazioni Publisher e Subsciber
     controller_pub = rospy.Publisher("controller", PyRobot.Controller_Node, queue_size=1)
     controller_to_lidar_pub = rospy.Publisher("controller_To_Lidar", PyRobot.Controller_To_Lidar_Node, queue_size=1)
@@ -194,18 +217,18 @@ def main():
     while not rospy.is_shutdown():
         if ifNotNone(switch, angle16, angle8, pitch, roll, mag, acc, gyro, temp, volt, sonar, visione):
             print (switch)
-            controller_msg.lidar = lidar18    # messaggio per il nodo Prolog per distanze lidar
+            controller_msg.lidar = lidar18  # messaggio per il nodo Prolog per distanze lidar
             controller_msg.angle16 = angle16  # messaggio per il nodo Prolog per angle16
-            controller_msg.angle8 = angle8    # messaggio per il nodo Prolog per angle8
-            controller_msg.pitch = pitch      # messaggio per il nodo Prolog per pitch
-            controller_msg.roll = roll        # messaggio per il nodo Prolog per roll
-            controller_msg.mag = mag          # messaggio per il nodo Prolog per mag
-            controller_msg.acc = acc          # messaggio per il nodo Prolog per acc
-            controller_msg.gyro = gyro        # messaggio per il nodo Prolog per gyro
-            controller_msg.temp = temp        # messaggio per il nodo Prolog per temp
+            controller_msg.angle8 = angle8  # messaggio per il nodo Prolog per angle8
+            controller_msg.pitch = pitch  # messaggio per il nodo Prolog per pitch
+            controller_msg.roll = roll  # messaggio per il nodo Prolog per roll
+            controller_msg.mag = mag  # messaggio per il nodo Prolog per mag
+            controller_msg.acc = acc  # messaggio per il nodo Prolog per acc
+            controller_msg.gyro = gyro  # messaggio per il nodo Prolog per gyro
+            controller_msg.temp = temp  # messaggio per il nodo Prolog per temp
             controller_msg.switches = switch  # messaggio per il nodo Prolog per switch
-            controller_msg.volt = volt        # messaggio per il nodo Prolog per volt
-            controller_msg.sonar = sonar      # messaggio per il nodo Prolog per sonar
+            controller_msg.volt = volt  # messaggio per il nodo Prolog per volt
+            controller_msg.sonar = sonar  # messaggio per il nodo Prolog per sonar
             controller_msg.visione = visione  # messaggio per il nodo Prolog per Py Camera
 
             if eureca == 'trovato':

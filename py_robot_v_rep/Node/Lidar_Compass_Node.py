@@ -64,7 +64,7 @@ def readproximity(clientID, handle):
     return distanza
 
 
-def angololidar(clientID, handle):
+def angololidar(clientID):
     """
     funzione che ci dice l' orientamento del oggetto passato rispetto al padre nel mondo v-rep,
     in quessto caso  e' l'orientamento del lidar rispetto il padre (corpo del rover)

@@ -84,7 +84,11 @@ def main():
     r = rospy.Rate(0.5)
 
     while not rospy.is_shutdown():
-        sonar_volt_msg.sonar = readproximity(clientID, newoggetti)
+        dist = readproximity(clientID, newoggetti)
+        dist[0] = dist[0] * 100
+        dist[1] = dist[1] * 100
+        dist[2] = dist[2] * 100
+        sonar_volt_msg.sonar =  dist
         distanza = []
         sonar_volt_msg.volt = readvolt(float(13))
         sonar_volt_pub.publish(sonar_volt_msg)

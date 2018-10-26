@@ -97,7 +97,7 @@ def startfunction():
     uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
     roslaunch.configure_logging(uuid)
     launch = roslaunch.parent.ROSLaunchParent(uuid, [
-        "/home/stefano/catkin_ws/src/py_robot/launch/node_launcher.launch"])  # qui da aggiornare con il path del file launch
+        "../launch/node_launcher.launch"])  # qui da aggiornare con il path del file launch
     launch.start()
     rospy.loginfo("started")
 
