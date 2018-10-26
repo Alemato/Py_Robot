@@ -91,10 +91,10 @@ def left(clientID, motors):
     :param motors: lista degli oggetti motori del mondo v-rep
     :return: nulla
     """
-    ris1 = simxSetJointTargetVelocity(clientID, motors[0], +2, simx_opmode_oneshot_wait)
-    ris2 = simxSetJointTargetVelocity(clientID, motors[1], -2, simx_opmode_oneshot_wait)
-    ris3 = simxSetJointTargetVelocity(clientID, motors[2], +2, simx_opmode_oneshot_wait)
-    ris4 = simxSetJointTargetVelocity(clientID, motors[3], -2, simx_opmode_oneshot_wait)
+    ris1 = simxSetJointTargetVelocity(clientID, motors[0], +0.5, simx_opmode_oneshot_wait)
+    ris2 = simxSetJointTargetVelocity(clientID, motors[1], -0.5, simx_opmode_oneshot_wait)
+    ris3 = simxSetJointTargetVelocity(clientID, motors[2], +0.5, simx_opmode_oneshot_wait)
+    ris4 = simxSetJointTargetVelocity(clientID, motors[3], -0.5, simx_opmode_oneshot_wait)
     if ris1 > 0 or ris2 > 0 or ris3 > 0 or ris4 > 0:
         print ("Error left")
 
@@ -120,10 +120,10 @@ def right(clientID, motors):
     :param motors: lista degli oggetti motori del mondo v-rep
     :return: nulla
     """
-    ris1 = simxSetJointTargetVelocity(clientID, motors[0], -2, simx_opmode_oneshot_wait)
-    ris2 = simxSetJointTargetVelocity(clientID, motors[1], +2, simx_opmode_oneshot_wait)
-    ris3 = simxSetJointTargetVelocity(clientID, motors[2], -2, simx_opmode_oneshot_wait)
-    ris4 = simxSetJointTargetVelocity(clientID, motors[3], +2, simx_opmode_oneshot_wait)
+    ris1 = simxSetJointTargetVelocity(clientID, motors[0], -0.5, simx_opmode_oneshot_wait)
+    ris2 = simxSetJointTargetVelocity(clientID, motors[1], +0.5, simx_opmode_oneshot_wait)
+    ris3 = simxSetJointTargetVelocity(clientID, motors[2], -0.5, simx_opmode_oneshot_wait)
+    ris4 = simxSetJointTargetVelocity(clientID, motors[3], +0.5, simx_opmode_oneshot_wait)
     if ris1 > 0 or ris2 > 0 or ris3 > 0 or ris4 > 0:
         print ("Error right")
 
@@ -173,7 +173,7 @@ def callback(msg):
 
     # dritto
     elif msg.velo == "e":
-        forward(clientID, motors, 3)
+        forward(clientID, motors, 1.5)
 
     elif msg.velo == "f":
         forward(clientID, motors, 3.5)
@@ -239,8 +239,8 @@ def main():
     motors = [newoggetti[3], newoggetti[4], newoggetti[5], newoggetti[6]]
     rospy.init_node("Motor_Switch_Node")
     rospy.Subscriber("controller_To_Motor", PyRobot.Controller_To_Motor_Node, callback)
-    switch_pub = rospy.Publisher("switches", PyRobot.Motor_Switch_Node, queue_size=1)
-    r = rospy.Rate(1)
+    switch_pub = rospy.Publisher("switches", PyRobot.Motor_Switch_Node, queue_size=0)
+    r = rospy.Rate(3)
 
     while not rospy.is_shutdown():
         microswitch = micro(clientID)

@@ -117,8 +117,8 @@ def main():
     clientID = connessione()
     oggetto = oggetti(clientID)
     rospy.init_node("Pi_Camera_Node", disable_signals=True)
-    pi_camera_pub = rospy.Publisher("pi_camera", PyRobot.Pi_Camera_Node, queue_size=1)
-    r = rospy.Rate(1)
+    pi_camera_pub = rospy.Publisher("pi_camera", PyRobot.Pi_Camera_Node, queue_size=0)
+    r = rospy.Rate(0.5)
     while not rospy.is_shutdown():
         pi_camera_msg.visione = imgs(immagine(clientID))
         pi_camera_pub.publish(pi_camera_msg)

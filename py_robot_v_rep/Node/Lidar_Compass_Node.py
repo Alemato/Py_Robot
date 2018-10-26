@@ -117,8 +117,8 @@ def main():
     handle = oggetti(clientID)
     rospy.init_node("Lidar_Compass_Node")
     rospy.Subscriber("controller_To_Lidar", PyRobot.Controller_To_Lidar_Node, callback)
-    lidar_pub = rospy.Publisher("lidar_compass", PyRobot.Lidar_Compass_Node, queue_size=1)
-    r = rospy.Rate(1)
+    lidar_pub = rospy.Publisher("lidar_compass", PyRobot.Lidar_Compass_Node, queue_size=0)
+    r = rospy.Rate(0.5)
     while not rospy.is_shutdown():
         lidar_compass_msg.lidar = lidarvar
         lidar_compass_msg.angle16 = int(0)

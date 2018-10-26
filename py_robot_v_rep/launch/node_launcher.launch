@@ -1,0 +1,12 @@
+<launch>
+	<node pkg="py_robot_v_rep" type="Lidar_Compass_Node.py" name="Lidar_Compass_Node" output="screen">
+	</node>
+	<node pkg="py_robot_v_rep" type="Sonar_Volt_Node.py" name="Sonar_Volt_Node" output="screen">
+	</node>
+	<node pkg="py_robot_v_rep" type="Motor_Switch_Node.py" name="Motor_Switch_Node" output="screen">
+	</node>
+	<node pkg="py_robot_v_rep" type="Opencv_Node.py" name="Opencv_Node" output="screen">
+	</node>
+	<node pkg="py_robot_v_rep" type="Controller_Node.py" name="Controller_Node" output="screen">
+	</node>
+</launch>

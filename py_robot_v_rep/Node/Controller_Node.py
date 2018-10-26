@@ -190,7 +190,7 @@ def main():
     rospy.Subscriber("mv_camera", PyRobot.MV_Camera_Node, callback_mvcamera)
     rospy.Subscriber("lidar_compass", PyRobot.Lidar_Compass_Node, callback_lidar_compass)
     rospy.Subscriber("pi_camera", PyRobot.Pi_Camera_Node, callback_pi_camera)
-    r = rospy.Rate(1)
+    r = rospy.Rate(0.5)
     while not rospy.is_shutdown():
         if ifNotNone(switch, angle16, angle8, pitch, roll, mag, acc, gyro, temp, volt, sonar, visione):
             print (switch)

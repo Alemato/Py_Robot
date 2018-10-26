@@ -86,8 +86,8 @@ def prologIA(prolog, commandolder, qrcode, fotocamera, switch, sonar, volt, lida
     prolog.assertz("qrcode(" + str(qrcode) + ")")
 
     # mettere prima il destro cosi se sono 3 sonar uguali il sistema prendera il primo e quindi va avanti
-    prolog.assertz("sonar(sinistra, " + str(sonar[0]) + ")")
     prolog.assertz("sonar(centro, " + str(sonar[1]) + ")")
+    prolog.assertz("sonar(sinistra, " + str(sonar[0]) + ")")
     prolog.assertz("sonar(destra, " + str(sonar[2]) + ")")
 
     # switch
@@ -152,7 +152,7 @@ def prologIA(prolog, commandolder, qrcode, fotocamera, switch, sonar, volt, lida
     prolog.assertz("sonartrue(_):- sonar(destra, A), sonar(centro, B), sonar(sinistra, C),  A > 30, B > 30, C > 30, !")
 
     # regola per capire quale e' il sonar con la distanza maggiore
-    prolog.assertz("sonar(Y) :- sonar(centro, A), sonar(destra, B), sonar(sinistra, C), D is max(A, B), X is max(D, "
+    prolog.assertz("sonar(Y) :- sonar(sinistra, A), sonar(destra, B), sonar(centro, C), D is max(A, B), X is max(D, "
                    "C), sonar(Y, X),!")
 
     # comando batteria
@@ -178,8 +178,12 @@ def prologIA(prolog, commandolder, qrcode, fotocamera, switch, sonar, volt, lida
                    "C is 4, command(X,C),!")
 
     # comando avanti
+    #prolog.assertz("command(X):- commandolder(O), O == avanti, switch(_), volt(Y), Y > 11, qrcode(Q), Q == 0, "
+    #              "sonartrue(_), C is 1, command(X,C),!")
     prolog.assertz("command(X):- commandolder(O), O == avanti, switch(_), volt(Y), Y > 11, qrcode(Q), Q == 0, "
-                   "sonartrue(_), C is 1, command(X,C),!")
+                   "sonar(U), U == centro, fotocamera(F), F == centro, C is 1, command(X,C),!")
+    prolog.assertz("command(X):- commandolder(O), O == avanti, switch(_), volt(Y), Y > 11, qrcode(Q), Q == 0, "
+                   "sonar(U), U == centro, C is 1, command(X,C),!")
     prolog.assertz("command(X):- commandolder(O), O \== indietro, switch(_), volt(Y), Y > 11, qrcode(Q), Q == 0, "
                    "sonar(U), U == centro, fotocamera(F), F == centro, C is 1, command(X,C),!")
     prolog.assertz("command(X):- commandolder(O), O \== indietro,switch(_), volt(Y), Y > 11, qrcode(Q), Q == 0, "
@@ -267,8 +271,10 @@ def prologIA(prolog, commandolder, qrcode, fotocamera, switch, sonar, volt, lida
     #############################
     # Esequzione query generale #
     #############################
+    print (list(prolog.query("sonar(_,X)")))
     print(list(prolog.query("sonar(X)")))
-    print(list(prolog.query("commandolder(X)")))
+    print(list(prolog.query("commandolder(Commandolder)")))
+    print(list(prolog.query("fotocamera(Fotocamera)")))
     result = list(prolog.query("command(Result)"))
 
     ##################################################
@@ -347,7 +353,7 @@ def prologIA(prolog, commandolder, qrcode, fotocamera, switch, sonar, volt, lida
     prolog.retract("sonartrue(_):- sonar(destra, A), sonar(centro, B), sonar(sinistra, C),  A > 30, B > 30, C > 30, !")
 
     # regola per capire quale e' il sonar con la distanza maggiore
-    prolog.retract("sonar(Y) :- sonar(centro, A), sonar(destra, B), sonar(sinistra, C), D is max(A, B), X is max(D, "
+    prolog.retract("sonar(Y) :- sonar(sinistra, A), sonar(destra, B), sonar(centro, C), D is max(A, B), X is max(D, "
                    "C), sonar(Y, X),!")
 
     # comando batteria
@@ -373,8 +379,12 @@ def prologIA(prolog, commandolder, qrcode, fotocamera, switch, sonar, volt, lida
                    "C is 4, command(X,C),!")
 
     # comando avanti
+    #prolog.retract("command(X):- commandolder(O), O == avanti, switch(_), volt(Y), Y > 11, qrcode(Q), Q == 0, "
+    #               "sonartrue(_), C is 1, command(X,C),!")
     prolog.retract("command(X):- commandolder(O), O == avanti, switch(_), volt(Y), Y > 11, qrcode(Q), Q == 0, "
-                   "sonartrue(_), C is 1, command(X,C),!")
+                   "sonar(U), U == centro, fotocamera(F), F == centro, C is 1, command(X,C),!")
+    prolog.retract("command(X):- commandolder(O), O == avanti, switch(_), volt(Y), Y > 11, qrcode(Q), Q == 0, "
+                   "sonar(U), U == centro, C is 1, command(X,C),!")
     prolog.retract("command(X):- commandolder(O), O \== indietro, switch(_), volt(Y), Y > 11, qrcode(Q), Q == 0, "
                    "sonar(U), U == centro, fotocamera(F), F == centro, C is 1, command(X,C),!")
     prolog.retract("command(X):- commandolder(O), O \== indietro,switch(_), volt(Y), Y > 11, qrcode(Q), Q == 0, "
@@ -414,7 +424,7 @@ def callback(msg):
     switch[1] = int(switch[1])
     switch[2] = int(switch[2])
     sonare = msg.sonar
-    sonar = (sonare[0] * 100, sonare[1] * 100, sonare[2] * 100)
+    sonar = (int(sonare[0] * 100), int(sonare[1] * 100), int(sonare[2] * 100))
     volt = msg.volt
     lidar = msg.lidar
     angle16 = msg.angle16
@@ -458,9 +468,9 @@ def main():
         volt, lidar, angle8, angle16, pitch, roll, mag, acc, gyro, temp
     commandIA = ''
     rospy.init_node("Prologo_IA_Node", disable_signals=True)
-    prolog_pub = rospy.Publisher("prolog_ia", PyRobot.Prolog_IA_Node, queue_size=1)
+    prolog_pub = rospy.Publisher("prolog_ia", PyRobot.Prolog_IA_Node, queue_size=0)
     rospy.Subscriber("controller", PyRobot.Controller_Node, callback)
-    r = rospy.Rate(10)
+    r = rospy.Rate(1)
     while not rospy.is_shutdown():
         if commandIA == '':
             if ifNotNone(qrcode, fotocamera, switch, sonar, volt, lidar,
