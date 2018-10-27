@@ -27,6 +27,7 @@ volt = None
 eureca = None
 visione = None
 launch = None
+fine = False
 
 
 def resetvar():
@@ -61,7 +62,7 @@ def callback_prolog(msg):
     :param msg: messagio ricevuto
     :return: nulla
     """
-    global comando
+    global comando, fine
     comando = ""
     risposta_prolog = msg.risposta
     print("prolog")
@@ -82,7 +83,8 @@ def callback_prolog(msg):
     elif risposta_prolog == 'attiva_lidar':
         comando = "v"
     elif risposta_prolog == 'fine':
-        endfunction()
+        comando = 's'
+        fine = True
     else:
         comando = 's'
 
@@ -92,6 +94,7 @@ def startfunction():
     Funzione di inizio programma. Si occupa di far partire i nodi
     :return: nulla
     """
+    global launch
     path = os.getcwd()
     uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
     roslaunch.configure_logging(uuid)
@@ -106,7 +109,7 @@ def endfunction():
     Funzione di fine programma. Si occupa di far terminare il Nodo Controller
     :return: nulla
     """
-    global comando
+    global comando, launch
     launch.shutdown()
     time.sleep(1)
     rospy.signal_shutdown('Mission Complete')
@@ -199,6 +202,7 @@ def main():
     i valori ricevuti dai vari Nodi nei mesaggi Controller_Node.msg e Controller_To_Lidar.msg.
     """
     global angle16, angle8, pitch, roll, mag, acc, gyro, temp, lidar18, switch, sonar, volt, eureca, visione, comando
+    global fine
     # resetvar()
     # inizializzazione nodo Controller
     rospy.init_node("Controller_Node", disable_signals=True)
@@ -247,7 +251,9 @@ def main():
             rospy.loginfo(controller_msg)
             rospy.loginfo(controller_to_lidar_msg)
             rospy.loginfo(controller_to_motor_msg)
-
+            if fine:
+                time.sleep(2)
+                endfunction()
             resetvar()
             r.sleep()
 

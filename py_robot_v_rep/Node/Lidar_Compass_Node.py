@@ -107,7 +107,7 @@ def callback(msg):
     if msg.on_off_lidar:
         lidarvar = [0.] * 18
         lidarvar[0] = lidar(clientID, handle, +89)
-        for i in range(1, 19):
+        for i in range(1, 18):
             lidarvar[i] = lidar(clientID, handle, -10.0)
 
 
