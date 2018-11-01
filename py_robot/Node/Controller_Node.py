@@ -36,7 +36,8 @@ def resetvar():
     temp, lidar18, comando, switch, sonar, volt, eureca e visione
     :return: nulla
     """
-    global angle16, angle8, pitch, roll, mag, acc, gyro, temp, lidar18, switch, sonar, volt, eureca, visione, comando, risposta_prolog
+    global angle16, angle8, pitch, roll, mag, acc, gyro, temp, lidar18, switch, sonar, volt, eureca, visione, \
+        comando, risposta_prolog
 
     angle16 = None
     angle8 = None
@@ -67,26 +68,28 @@ def callback_prolog(msg):
 
     risposta_prolog = msg.risposta
 
-    comando = ""
+    comando = ''
     risposta_prolog = msg.risposta
-    if risposta_prolog == 'dritto':
+    if risposta_prolog == "dritto":
         comando = "e"
-    elif risposta_prolog == 'destra':
+    elif risposta_prolog == "destra":
         comando = "r"
-    elif risposta_prolog == 'sinistra':
+    elif risposta_prolog == "sinistra":
         comando = "q"
-    elif risposta_prolog == 'indietro':
+    elif risposta_prolog == "indietro":
         comando = "i"
-    elif risposta_prolog == 'stop':
+    elif risposta_prolog == "stop":
         comando = "s"
-    elif risposta_prolog == 'correggi_a_destra':
+    elif risposta_prolog == "correggi_a_destra":
         comando = "t"
-    elif risposta_prolog == 'correggi_a_sinistra':
+    elif risposta_prolog == "correggi_a_sinistra":
         comando = "u"
-    elif risposta_prolog == 'attiva_lidar':
+    elif risposta_prolog == "attiva_lidar":
         comando = "s"
-    elif risposta_prolog == 'fine':
+    elif risposta_prolog == "fine":
         endfunction()
+    else:
+        comando = 's'
 
 
 def startfunction():
@@ -176,22 +179,26 @@ def ifNotNone(angle16, angle8, pitch, roll, mag, acc, gyro, temp, volt, sonar, v
     """
     funzione di controlo delle variabili globali,
     controlla se sono state modificate tutte
-    :param angle16:
-    :param angle8:
-    :param pitch:
-    :param roll:
-    :param mag:
-    :param acc:
-    :param gyro:
-    :param temp:
-    :param volt:
-    :param sonar:
-    :param visione:
     :param risposta_prolog:
-    :return: True se sono modificate, False se sono ancora nulle
+    :param visione:
+    :param angle16: misura del angolo a 16
+    :param angle8: misura del angolo a 8
+    :param pitch: misura del pitch
+    :param roll: misura del roll
+    :param mag: misura del mag
+    :param acc: misura del acc
+    :param gyro: misura del gyro
+    :param temp: misura della temperatura
+    :param comando: variabile del comando da inviare
+    :param volt: misura della batteria
+    :param sonar: misura dei sonar
+    :return: True se sono modificate, False se sono ancora None
     """
 
-    return angle16 is not None and angle8 is not None and pitch is not None and roll is not None and mag is not None and acc is not None and gyro is not None and temp is not None and volt is not None and sonar is not None and visione is not None and risposta_prolog is not None and switch is not None
+    return angle16 is not None and angle8 is not None and pitch is not None and roll is not None \
+           and mag is not None and acc is not None and gyro is not None and temp is not None \
+           and volt is not None and sonar is not None and visione is not None \
+           and risposta_prolog is not None and not switch == [None, None, None]
 
 
 def main():
@@ -200,7 +207,8 @@ def main():
     i valori ricevuti dai vari Nodi nei mesaggi Controller_Node.msg e Controller_To_Lidar.msg.
     :return: nulla
     """
-    global angle16, angle8, pitch, roll, mag, acc, gyro, temp, lidar18, switch, sonar, volt, eureca, visione, comando, risposta_prolog
+    global angle16, angle8, pitch, roll, mag, acc, gyro, temp, lidar18, switch, sonar, volt, eureca, visione, \
+        comando, risposta_prolog
     # inizializzazione nodo Controller
     rospy.init_node("Controller_Node", disable_signals=True)
     startfunction()

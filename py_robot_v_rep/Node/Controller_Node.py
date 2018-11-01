@@ -27,6 +27,7 @@ volt = None
 eureca = None
 visione = None
 launch = None
+risposta_prolog = None
 fine = False
 
 
@@ -36,7 +37,7 @@ def resetvar():
     Lavora sulle variabili globali angle16, angle8, pitch, roll, mag, acc, gyro,
     temp, lidar18, comando, switch, sonar, volt, eureca e visione
     """
-    global angle16, angle8, pitch, roll, mag, acc, gyro, temp, lidar18, switch, sonar, volt, eureca, visione, comando
+    global angle16, angle8, pitch, roll, mag, acc, gyro, temp, lidar18, switch, sonar, volt, eureca, visione, comando, risposta_prolog
 
     angle16 = None
     angle8 = None
@@ -53,6 +54,7 @@ def resetvar():
     volt = None
     eureca = None
     visione = None
+    risposta_prolog = None
 
 
 def callback_prolog(msg):
@@ -175,10 +177,12 @@ def callback_pi_camera(msg):
     print ("pi_camera")
 
 
-def ifNotNone(switch, angle16, angle8, pitch, roll, mag, acc, gyro, temp, volt, sonar, visione):
+def ifNotNone(switch, angle16, angle8, pitch, roll, mag, acc, gyro, temp, volt, sonar, visione, risposta_prolog):
     """
     funzione di controlo delle variabili globali,
     controlla se sono state modificate tutte
+    :param risposta_prolog:
+    :param visione:
     :param angle16: misura del angolo a 16
     :param angle8: misura del angolo a 8
     :param pitch: misura del pitch
@@ -190,10 +194,10 @@ def ifNotNone(switch, angle16, angle8, pitch, roll, mag, acc, gyro, temp, volt, 
     :param comando: variabile del comando da inviare
     :param volt: misura della batteria
     :param sonar: misura dei sonar
-    :return: True se sono modificate, False se sono ancora nulle
+    :return: True se sono modificate, False se sono ancora None
     """
     return not switch == [None, None,
-                          None] and angle16 is not None and angle8 is not None and pitch is not None and roll is not None and mag is not None and acc is not None and gyro is not None and temp is not None and volt is not None and sonar is not None and visione is not None
+                          None] and angle16 is not None and angle8 is not None and pitch is not None and roll is not None and mag is not None and acc is not None and gyro is not None and temp is not None and volt is not None and sonar is not None and visione is not None and risposta_prolog is not None
 
 
 def main():
@@ -202,7 +206,7 @@ def main():
     i valori ricevuti dai vari Nodi nei mesaggi Controller_Node.msg e Controller_To_Lidar.msg.
     """
     global angle16, angle8, pitch, roll, mag, acc, gyro, temp, lidar18, switch, sonar, volt, eureca, visione, comando
-    global fine
+    global fine, risposta_prolog
     # resetvar()
     # inizializzazione nodo Controller
     rospy.init_node("Controller_Node", disable_signals=True)
@@ -219,7 +223,7 @@ def main():
     rospy.Subscriber("pi_camera", PyRobot.Pi_Camera_Node, callback_pi_camera)
     r = rospy.Rate(0.5)
     while not rospy.is_shutdown():
-        if ifNotNone(switch, angle16, angle8, pitch, roll, mag, acc, gyro, temp, volt, sonar, visione):
+        if ifNotNone(switch, angle16, angle8, pitch, roll, mag, acc, gyro, temp, volt, sonar, visione, risposta_prolog):
             print (switch)
             controller_msg.lidar = lidar18  # messaggio per il nodo Prolog per distanze lidar
             controller_msg.angle16 = angle16  # messaggio per il nodo Prolog per angle16
@@ -238,7 +242,7 @@ def main():
             if eureca == 'trovato':
                 controller_msg.qrcode = 1  # messaggio per il nodo Prolog per qrcode
 
-            if comando == 'v':  # messaggio per il Nodo  Compass_Servo_Lidar
+            if risposta_prolog == 'attiva_lidar':  # messaggio per il Nodo  Compass_Servo_Lidar
                 controller_to_lidar_msg.on_off_lidar = True
 
             if comando is not None:

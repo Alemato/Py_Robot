@@ -31,7 +31,7 @@ temp = None
 
 def resetNone():
     """
-    Funzione per il reset delle variabili abientali
+    Funzione per il reset delle variabili ambientali
     :return:
     """
     global qrcode, fotocamera, switch, sonar, volt, lidar, angle16, angle8, pitch, roll, mag, acc, gyro, temp
