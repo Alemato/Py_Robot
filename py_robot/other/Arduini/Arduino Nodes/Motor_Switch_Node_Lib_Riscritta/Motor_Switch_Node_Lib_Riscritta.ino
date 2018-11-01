@@ -9,14 +9,14 @@
 ros::NodeHandle nh;
 
 // assegnamento pin motori 1 e 2
-#define AIN1 2
-#define AIN2 4
-#define PWMA 3
+int SXIN1 = 2;
+int SXIN2 = 4;
+int SXPWM = 3;
 
 // assegnamento pin motori 3 e 4
-#define BIN1 5
-#define BIN2 7
-#define PWMB 6
+int DXIN1 = 5;
+int DXIN2 = 7;
+int DXPWM = 6;
 
 // assegnamento pin switch
 #define switchFront 8
@@ -24,6 +24,7 @@ ros::NodeHandle nh;
 #define switchRight 10
 
 // variabili globali
+String comando;
 char cmd[1];
 int vel;
 
@@ -32,9 +33,9 @@ int vel;
 
 void callback( const py_robot::Controller_To_Motor_Node& velo) {
   // assegnamento del comando impartito dal Nodo Controller
-  velocita = velo.velo;
+  comando = velo.velo;
   // conversione della da stringa ad array di char
-  velocita.toCharArray(cmd, 1);
+  comando.toCharArray(cmd, 1);
 
 }
 // funzione sottoscrizione di ros
@@ -49,6 +50,32 @@ ros::Publisher switch_pub("switches", &switches);
 // funzione per switch
 // PARAM: switchpin
 // RETURN 0 se il lo switch non è attivato, 1 se è attivato
+
+void setup() {
+  // inizializzazione nodo
+  nh.initNode();
+  nh.advertise(switch_pub);
+  nh.subscribe(motor_sub);
+
+  //pin switch
+  pinMode(switchFront, INPUT);
+  pinMode(switchRight, INPUT);
+  pinMode(switchLeft, INPUT);
+
+  pinMode(SXPWM, OUTPUT);
+  pinMode(SXIN1, OUTPUT);
+  pinMode(SXIN2, OUTPUT);
+
+  pinMode(DXPWM, OUTPUT);
+  pinMode(DXIN1, OUTPUT);
+  pinMode(DXIN2, OUTPUT);
+
+  analogWrite(SXPWM, 0);
+  analogWrite(DXPWM, 0);
+
+  delay(1000);
+}
+
 
 long switchsensor(int switchpin) {
   // controllo se lo switch è stato premuto
@@ -75,8 +102,8 @@ void vaiAvanti(int vel, int tempo) {
   digitalWrite(SXIN1, 1);
   digitalWrite(SXIN2, 0);
 
-  digitalWrite(DXIN1. 1);
-  digitalWrite(DXIN2. 0);
+  digitalWrite(DXIN1, 1);
+  digitalWrite(DXIN2, 0);
 
   analogWrite(SXPWM, vel);
   analogWrite(DXPWM, vel);
@@ -88,8 +115,8 @@ void vaiIndietro(int vel, int tempo) {
   digitalWrite(SXIN1, 0);
   digitalWrite(SXIN2, 1);
 
-  digitalWrite(DXIN1. 0);
-  digitalWrite(DXIN2. 1);
+  digitalWrite(DXIN1, 0);
+  digitalWrite(DXIN2, 1);
 
   analogWrite(SXPWM, vel);
   analogWrite(DXPWM, vel);
@@ -101,8 +128,8 @@ void vaiSinistra(int vel, int tempo) {
   digitalWrite(SXIN1, 1);
   digitalWrite(SXIN2, 0);
 
-  digitalWrite(DXIN1. 0);
-  digitalWrite(DXIN2. 1);
+  digitalWrite(DXIN1, 0);
+  digitalWrite(DXIN2, 1);
 
   analogWrite(SXPWM, vel);
   analogWrite(DXPWM, vel);
@@ -114,8 +141,8 @@ void vaiDestra(int vel, int tempo) {
   digitalWrite(SXIN1, 0);
   digitalWrite(SXIN2, 1);
 
-  digitalWrite(DXIN1. 1);
-  digitalWrite(DXIN2. 0);
+  digitalWrite(DXIN1, 1);
+  digitalWrite(DXIN2, 0);
 
   analogWrite(SXPWM, vel);
   analogWrite(DXPWM, vel);
@@ -127,24 +154,13 @@ void fermo() {
   digitalWrite(SXIN1, 0);
   digitalWrite(SXIN2, 0);
 
-  digitalWrite(DXIN1. 0);
-  digitalWrite(DXIN2. 0);
+  digitalWrite(DXIN1, 0);
+  digitalWrite(DXIN2, 0);
 
   analogWrite(SXPWM, 0);
   analogWrite(DXPWM, 0);
 }
 
-void setup() {
-  // inizializzazione nodo
-  nh.initNode();
-  nh.advertise(switch_pub);
-  nh.subscribe(motor_sub);
-
-  //pin switch
-  pinMode(switchFront, INPUT);
-  pinMode(switchRight, INPUT);
-  pinMode(switchLeft, INPUT);
-}
 
 void loop() {
 
@@ -190,19 +206,19 @@ void loop() {
     case 'p': vaiIndietro(210, 2000);
       break;
 
-    case 'q': vaiSinistra();
+    case 'q': vaiSinistra(100, 2000);
       break;
 
-    case 'r': vaiDestra();
+    case 'r': vaiDestra(100, 2000);
       break;
 
     case 's': fermo();
       break;
 
-    case 't': vaiSinistra(100, 500);        \\ correzione a sinistra
+    case 't': vaiSinistra(100, 500);        // correzione a sinistra
       break;
 
-    case 'u': vaiDestra(100, 500);          \\ correzione a destra
+    case 'u': vaiDestra(100, 500);          // correzione a destra
       break;
   }
 
@@ -220,9 +236,9 @@ void loop() {
   // procedura da attuare dopo che uno degli switch viene attivato
   if (switches.switches[0] == 0 || switches.switches[1] == 0 || switches.switches[2] == 0) {
     // stop
-    VaiAvanti(0, 2000);
+    fermo();
     // indietro per ___ secondi
-    VaiIndietro(80, 2000);
+    vaiIndietro(80, 2000);
   }
   // attesa eventi ROS
   nh.spinOnce();
