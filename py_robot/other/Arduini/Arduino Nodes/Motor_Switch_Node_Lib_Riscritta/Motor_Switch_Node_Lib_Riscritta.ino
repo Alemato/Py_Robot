@@ -122,6 +122,7 @@ void vaiIndietro(int vel, int tempo) {
   analogWrite(DXPWM, vel);
 
   delay(tempo);
+  fermo();
 }
 
 void vaiSinistra(int vel, int tempo) {
@@ -135,6 +136,7 @@ void vaiSinistra(int vel, int tempo) {
   analogWrite(DXPWM, vel);
 
   delay(tempo);
+  fermo();
 }
 
 void vaiDestra(int vel, int tempo) {
@@ -148,6 +150,7 @@ void vaiDestra(int vel, int tempo) {
   analogWrite(DXPWM, vel);
 
   delay(tempo);
+  fermo();
 }
 
 void fermo() {

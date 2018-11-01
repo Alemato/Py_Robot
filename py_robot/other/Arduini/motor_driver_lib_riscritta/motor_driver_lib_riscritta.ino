@@ -8,12 +8,14 @@
 #define DXIN2 7
 #define DXPWM 6
 
+char cmd;
+
 void vaiAvanti(int vel, int tempo) {
   digitalWrite(SXIN1, 1);
   digitalWrite(SXIN2, 0);
 
-  digitalWrite(DXIN1. 1);
-  digitalWrite(DXIN2. 0);
+  digitalWrite(DXIN1, 1);
+  digitalWrite(DXIN2, 0);
 
   analogWrite(SXPWM, vel);
   analogWrite(DXPWM, vel);
@@ -25,47 +27,50 @@ void vaiIndietro(int vel, int tempo) {
   digitalWrite(SXIN1, 0);
   digitalWrite(SXIN2, 1);
 
-  digitalWrite(DXIN1. 0);
-  digitalWrite(DXIN2. 1);
+  digitalWrite(DXIN1, 0);
+  digitalWrite(DXIN2, 1);
 
   analogWrite(SXPWM, vel);
   analogWrite(DXPWM, vel);
 
   delay(tempo);
+  fermo();
 }
 
 void vaiSinistra(int vel, int tempo) {
   digitalWrite(SXIN1, 1);
   digitalWrite(SXIN2, 0);
 
-  digitalWrite(DXIN1. 0);
-  digitalWrite(DXIN2. 1);
+  digitalWrite(DXIN1, 0);
+  digitalWrite(DXIN2, 1);
 
   analogWrite(SXPWM, vel);
   analogWrite(DXPWM, vel);
 
   delay(tempo);
+  fermo();
 }
 
 void vaiDestra(int vel, int tempo) {
   digitalWrite(SXIN1, 0);
   digitalWrite(SXIN2, 1);
 
-  digitalWrite(DXIN1. 1);
-  digitalWrite(DXIN2. 0);
+  digitalWrite(DXIN1, 1);
+  digitalWrite(DXIN2, 0);
 
   analogWrite(SXPWM, vel);
   analogWrite(DXPWM, vel);
 
   delay(tempo);
+  fermo();
 }
 
 void fermo() {
   digitalWrite(SXIN1, 0);
   digitalWrite(SXIN2, 0);
 
-  digitalWrite(DXIN1. 0);
-  digitalWrite(DXIN2. 0);
+  digitalWrite(DXIN1, 0);
+  digitalWrite(DXIN2, 0);
 
   analogWrite(SXPWM, 0);
   analogWrite(DXPWM, 0);
@@ -73,10 +78,13 @@ void fermo() {
 
 
 void setup() {
+  Serial.begin(9600);
+  Serial.println("Scrivi un comando");
+
   pinMode(SXPWM, OUTPUT);
   pinMode(SXIN1, OUTPUT);
   pinMode(SXIN2, OUTPUT);
-  
+
   pinMode(DXPWM, OUTPUT);
   pinMode(DXIN1, OUTPUT);
   pinMode(DXIN2, OUTPUT);
@@ -88,7 +96,8 @@ void setup() {
 }
 
 void loop() {
-    switch (cmd[0]) {
+  cmd = Serial.read();
+  switch (cmd) {
 
     case 'a': vaiAvanti(70, 2000);
       break;
@@ -129,20 +138,20 @@ void loop() {
     case 'p': vaiIndietro(210, 2000);
       break;
 
-    case 'q': vaiSinistra();
+    case 'q': vaiSinistra(100, 2000);
       break;
 
-    case 'r': vaiDestra();
+    case 'r': vaiDestra(100, 2000);
       break;
 
     case 's': fermo();
       break;
 
-    case 't': vaiSinistra(100, 500);        \\ correzione a sinistra
+    case 't': vaiSinistra(100, 500);        // correzione a sinistra
       break;
 
-    case 'u': vaiDestra(100, 500);          \\ correzione a destra
+    case 'u': vaiDestra(100, 500);          // correzione a destra
       break;
-
-
+  }
+  delay(2000);
 }
