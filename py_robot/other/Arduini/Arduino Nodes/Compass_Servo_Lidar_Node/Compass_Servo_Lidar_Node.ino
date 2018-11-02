@@ -210,7 +210,7 @@ int readlidar() {
 int readservo() {
   int dist = 0;
   // ciclo che scorre i 10 gradi della porzione di spazio
-  for (int pos = 0; pos < 10; pos++) {
+  for (int pos = 0; pos < 2; pos = pos + 5) {
     // setto la posizione del servo
     myservo.write(pos);
     delay(15);
@@ -233,7 +233,7 @@ void loop() {
     delay(200);
     // ciclo che calcola la media delle 18 porzioni con il Servo ed il Lidar
     for (int i = 0; i < 18; i++) {
-      arraydist[i] = readservo() / 10;
+      arraydist[i] = readservo() / 2;
     }
     // store delle medie delle distanze nella variabile array lidar del custom message lidar_compass
     for (int i = 0; i < 18; i++) {

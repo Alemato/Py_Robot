@@ -18,11 +18,8 @@ ros::NodeHandle nh;
 #define analogInput 0
 
 // variabili voltometer
-float vout = 0.0;
-float vin = 0.0;
-float R1 = 100000.0; // resistance of R1 (100K) -see text!
-float R2 = 10000.0; // resistance of R2 (10K) - see text!
-int value = 0;
+float val;
+float temp;
 
 // ros custom message sonar_volt
 py_robot::Sonar_Volt_Node sonar_volt_msg;
@@ -81,18 +78,10 @@ long sonarsensor(int triggerPin, int echoPin) {
 // RETURN: vin di tipo float, ritorna voltaggio in imput dalla batteria
 
 float voltometer() {
-  // lettura del valore dall'analogInput
-  value = analogRead(analogInput);
-  // normalizzazione lettura valore
-  vout = (value * 5.0) / 1024.0;
-  // funzione che tramite le resistenze calcola il voltaggio della batteria
-  vin = vout / (R2 / (R1 + R2));
-  // istruzione per annullare la lettura errata
-  if (vin < 0.09) {
-    vin = 0.0;
-    // ritorno valore voltaggio
-    return vin;
-  }
+    val=analogRead(0); // lettura segnale
+    temp=val/40.92; 
+    val=temp - 0.7; // sottraggo margine di errore
+    return val;
 }
 
 void loop() {

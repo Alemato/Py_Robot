@@ -9,19 +9,20 @@
 ros::NodeHandle nh;
 
 // assegnamento pin motori 1 e 2
-int SXIN1 = 2;
-int SXIN2 = 4;
-int SXPWM = 3;
+#define SXPWM 3
+#define SXIN1 4
+#define SXIN2 5
 
 // assegnamento pin motori 3 e 4
-int DXIN1 = 5;
-int DXIN2 = 7;
-int DXPWM = 6;
+#define DXPWM 6
+#define DXIN1 7
+#define DXIN2 8
+
 
 // assegnamento pin switch
-#define switchFront 8
-#define switchLeft 9
-#define switchRight 10
+#define switchFront 11
+#define switchLeft 10
+#define switchRight 9
 
 // variabili globali
 String comando;
