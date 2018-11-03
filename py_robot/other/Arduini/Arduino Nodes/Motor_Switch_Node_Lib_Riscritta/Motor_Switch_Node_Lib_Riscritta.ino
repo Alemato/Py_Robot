@@ -58,25 +58,28 @@ void setup() {
   nh.advertise(switch_pub);
   nh.subscribe(motor_sub);
 
-  //pin switch
+  // pin switch
   pinMode(switchFront, INPUT);
   pinMode(switchRight, INPUT);
   pinMode(switchLeft, INPUT);
-
+  // pin motori 1 e 2 di sinistra
   pinMode(SXPWM, OUTPUT);
   pinMode(SXIN1, OUTPUT);
   pinMode(SXIN2, OUTPUT);
-
+  analogWrite(SXPWM, 0);
+ 
+  // pin motori 3 e 4 di destra
   pinMode(DXPWM, OUTPUT);
   pinMode(DXIN1, OUTPUT);
   pinMode(DXIN2, OUTPUT);
-
-  analogWrite(SXPWM, 0);
   analogWrite(DXPWM, 0);
 
   delay(1000);
 }
 
+// funzione per switch
+// PARAM: switchpin
+// RETURN 0 se il lo switch non è attivato, 1 se è attivato
 
 long switchsensor(int switchpin) {
   // controllo se lo switch è stato premuto
@@ -84,11 +87,6 @@ long switchsensor(int switchpin) {
     delay(20);
     // dopo 20 millisecondi controllo di nuovo se è ancora premuto per evitare errori
     if (digitalRead(switchpin) == HIGH) {
-      // procedura da attuare dopo che uno degli switch viene attivato
-      // stop
-      // VaiAvanti(0, 2000);
-      // indietro per ___ secondi
-      // VaiIndietro(80, 2000);
       // ritorna 0 se lo switch non è stato attivato
       return 0;
     }
@@ -99,70 +97,97 @@ long switchsensor(int switchpin) {
 
 // funzioni relative ai comandi da impartire ai motori
 
+// funzione Avanti
+// PARAM: intero vel: parametro velocità
+// PARAM: intero tempo: parametro tempo di esecuzione
 void vaiAvanti(int vel, int tempo) {
+  // relativo al motor drive collegato ai motori del lato sinistro
   digitalWrite(SXIN1, 1);
   digitalWrite(SXIN2, 0);
-
+  // velocità lato sinistro
+  analogWrite(SXPWM, vel);
+  // relativo al motor drive collegato ai motori del lato destro
   digitalWrite(DXIN1, 1);
   digitalWrite(DXIN2, 0);
-
-  analogWrite(SXPWM, vel);
+  // velocità lato destro
   analogWrite(DXPWM, vel);
 
   delay(tempo);
 }
 
+// funzione Indietro
+// PARAM: intero vel: parametro velocità
+// PARAM: intero tempo: parametro tempo di esecuzione
 void vaiIndietro(int vel, int tempo) {
+  // relativo al motor drive collegato ai motori del lato sinistro
   digitalWrite(SXIN1, 0);
   digitalWrite(SXIN2, 1);
-
+  // velocità lato sinistro
+  analogWrite(SXPWM, vel);
+  // relativo al motor drive collegato ai motori del lato destro
   digitalWrite(DXIN1, 0);
   digitalWrite(DXIN2, 1);
-
-  analogWrite(SXPWM, vel);
+  // velocità lato destro
   analogWrite(DXPWM, vel);
 
   delay(tempo);
-  fermo();
+  fermo(0);
 }
 
+// funzione Sinistra
+// PARAM: intero vel: parametro velocità
+// PARAM: intero tempo: parametro tempo di esecuzione
 void vaiSinistra(int vel, int tempo) {
+  // relativo al motor drive collegato ai motori del lato sinistro
   digitalWrite(SXIN1, 1);
   digitalWrite(SXIN2, 0);
-
+  // velocità lato sinistro
+  analogWrite(SXPWM, vel);
+  // relativo al motor drive collegato ai motori del lato destro
   digitalWrite(DXIN1, 0);
   digitalWrite(DXIN2, 1);
-
-  analogWrite(SXPWM, vel);
+  // velocità lato destro
   analogWrite(DXPWM, vel);
 
   delay(tempo);
-  fermo();
+  fermo(0);
 }
 
+// funzione Destra
+// PARAM: intero vel: parametro velocità
+// PARAM: intero tempo: parametro tempo di esecuzione
 void vaiDestra(int vel, int tempo) {
+  // relativo al motor drive collegato ai motori del lato sinistro
   digitalWrite(SXIN1, 0);
   digitalWrite(SXIN2, 1);
-
+  // velocità lato sinistro
+  analogWrite(SXPWM, vel);
+  // relativo al motor drive collegato ai motori del lato destro
   digitalWrite(DXIN1, 1);
   digitalWrite(DXIN2, 0);
-
-  analogWrite(SXPWM, vel);
+  // velocità lato destro
   analogWrite(DXPWM, vel);
 
   delay(tempo);
-  fermo();
+  fermo(0);
 }
 
-void fermo() {
+// funzione Stop
+// PARAM: intero vel: parametro velocità
+// PARAM: intero tempo: parametro tempo di esecuzione
+void fermo(int tempo) {
+  // relativo al motor drive collegato ai motori del lato sinistro
   digitalWrite(SXIN1, 0);
   digitalWrite(SXIN2, 0);
-
+  // velocità lato sinistro
+  analogWrite(SXPWM, 0);
+  // relativo al motor drive collegato ai motori del lato destro
   digitalWrite(DXIN1, 0);
   digitalWrite(DXIN2, 0);
-
-  analogWrite(SXPWM, 0);
+  // velocità lato destro
   analogWrite(DXPWM, 0);
+  
+  delay(tempo);
 }
 
 
@@ -216,7 +241,7 @@ void loop() {
     case 'r': vaiDestra(100, 2000);
       break;
 
-    case 's': fermo();
+    case 's': fermo(0);
       break;
 
     case 't': vaiSinistra(100, 500);        // correzione a sinistra
@@ -240,7 +265,7 @@ void loop() {
   // procedura da attuare dopo che uno degli switch viene attivato
   if (switches.switches[0] == 0 || switches.switches[1] == 0 || switches.switches[2] == 0) {
     // stop
-    fermo();
+    fermo(0);
     // indietro per ___ secondi
     vaiIndietro(80, 2000);
   }

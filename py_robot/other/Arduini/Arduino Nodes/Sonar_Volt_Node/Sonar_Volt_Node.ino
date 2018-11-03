@@ -74,13 +74,16 @@ long sonarsensor(int triggerPin, int echoPin) {
 }
 
 // funzione voltometer
-// PARAM: analogInput
-// RETURN: vin di tipo float, ritorna voltaggio in imput dalla batteria
+// RETURN: val di tipo float, ritorna voltaggio in imput dalla batteria
 
 float voltometer() {
-    val=analogRead(0); // lettura segnale
-    temp=val/40.92; 
-    val=temp - 0.7; // sottraggo margine di errore
+  // lettura segnale
+    val=analogRead(0);
+    // operazione di conversione segnale imput in volt
+    temp=val/40.92;
+    // sottraggo margine di errore 
+    val=temp - 0.7;
+    // ritorno valore volt
     return val;
 }
 
