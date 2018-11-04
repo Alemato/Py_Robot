@@ -80,10 +80,22 @@ def prologinit_and_rules():
     prolog.assertz("command(batteria, 7)")
     prolog.assertz("command(correggi_a_destra, 8)")
     prolog.assertz("command( correggi_a_sinistra, 9)")
+    prolog.assertz("command(attiva_lidar, 10)")
 
     #############################
     # CREAZIONE REGOLE GENERALI #
     #############################
+
+    # regola per il lidar ritorna l'angolo con la distanza maggiore
+    prolog.assertz("lidarmax(X):- lidar(0,A),lidar(10,B),lidar(20,C),lidar(30,D),lidar(40,E),lidar(50,F),lidar(60,G),"
+                   "lidar(70,H),lidar(80,I),lidar(90,L),lidar(100,M),lidar(110,N),lidar(120,O),lidar(130,P),"
+                   "lidar(140,Q),lidar(150,R),lidar(160,S),lidar(170,T), V is max(A,B), V1 is max(V,C),"
+                   "V2 is max(V1,D),V3 is max(V2,E),V4 is max(V3,F),V5 is max(V4,G), V6 is max(V5,H),"
+                   " V7 is max(V6,I), V8 is max(V7,L), V9 is max(V8,M), V10 is max(V9,N), V11 is max(V10,O),"
+                   " V12 is max(V11,P), V13  is max(V12,Q), V14 is max(V13,R), V15 is max(V14,S), V16 is max(V15,T),"
+                   " lidar(X,V16),!")
+
+    prolog.assertz("lidar(P):- lidarmedia(sinistra,X), lidarmedia(destra,Y), R is max(X,Y), lidarmedia(P,R),!")
 
     # regola per gli switch false se sbatte true se non sbatte
     prolog.assertz("switch(_):- switch(sinistra,X), switch(centro,Y), switch(destra, Z), X == 0, Y == 0, Z == 0, !")
@@ -110,6 +122,10 @@ def prologinit_and_rules():
     # comando fine
     prolog.assertz("command(X):- qrcode(1), C is 6, command(X,C),!")
 
+    # comando attiva lidar
+    prolog.assertz("command(X):- commandolder(O), O \== indietro, switch(_,1), volt(Y), Y > 11,"
+                   " qrcode(Q), Q == 0, command(X,10),!")
+
     # comando coregi a destra
     prolog.assertz("command(X):-commandolder(O), O == avanti, condictrue(_), distancetrue(_), angle8(A), oldangle8(B),"
                    " S is A-B, S > 10, command(X, 8),!")
@@ -120,8 +136,6 @@ def prologinit_and_rules():
 
     # comando indietro
     prolog.assertz("command(X):- commandolder(O), O \== indietro, \+ sonartrue(_), volt(Y), Y > 11,"
-                   " qrcode(Q), Q == 0, command(X,4),!")
-    prolog.assertz("command(X):- commandolder(O), O \== indietro, switch(_,1), volt(Y), Y > 11,"
                    " qrcode(Q), Q == 0, command(X,4),!")
 
     # comando avanti
@@ -147,6 +161,28 @@ def prologinit_and_rules():
 
     # comando stop (errore)
     prolog.assertz("command(X):- command(X,5),!")
+
+    ###############################################
+    # CREAZIONE REGOLE PER POST ATTIVAZIONE LIDAR #
+    ###############################################
+
+    # commando batteria
+    prolog.assertz("commandlidar(X):- volt(Y), Y < 11, C is 7, command(X, C),!")
+
+    # comando fine
+    prolog.assertz("commandlidar(X):- qrcode(1), C is 6, command(X,C),!")
+
+    # comando destra
+    prolog.assertz("commandlidar(X):-lidar(B), B == destra, volt(Y), Y>11, qrcode(Q), Q == 0, command(X,3),!")
+
+    # comando sinistra
+    prolog.assertz("commandlidar(X):-lidar(B), B == sinistra, volt(Y), Y>11, qrcode(Q), Q == 0, command(X,2),!")
+
+    # comando attiva_lidar in caso in qui gli switch siano ancora attivi
+    prolog.assertz("commandlidar(X):-switch(_,1), volt(Y), Y > 11, qrcode(Q), Q == 0, command(X,10),!")
+
+    # comando stop (errore)
+    prolog.assertz("commandlidar(X):- command(X,5),!")
 
 
 def prologIA(commandolder, qrcode, fotocamera, switch, sonar, volt, lidar,
@@ -199,6 +235,35 @@ def prologIA(commandolder, qrcode, fotocamera, switch, sonar, volt, lidar,
     # volt
     prolog.assertz("volt(" + str(volt) + ")")
 
+    ############################################
+    # CREAZIONE FATTI PER L'UTILIZZO DEL LIDAR #
+    ############################################
+
+    if commandolder == 'attiva_lidar':
+
+        # lidar ogni 10 gradi
+        prolog.assertz("lidar(0, " + str(lidar[0]) + ")")
+        prolog.assertz("lidar(10, " + str(lidar[1]) + ")")
+        prolog.assertz("lidar(20, " + str(lidar[2]) + ")")
+        prolog.assertz("lidar(30, " + str(lidar[3]) + ")")
+        prolog.assertz("lidar(40, " + str(lidar[4]) + ")")
+        prolog.assertz("lidar(50, " + str(lidar[5]) + ")")
+        prolog.assertz("lidar(60, " + str(lidar[6]) + ")")
+        prolog.assertz("lidar(70, " + str(lidar[7]) + ")")
+        prolog.assertz("lidar(80, " + str(lidar[8]) + ")")
+        prolog.assertz("lidar(90, " + str(lidar[9]) + ")")
+        prolog.assertz("lidar(100, " + str(lidar[10]) + ")")
+        prolog.assertz("lidar(110, " + str(lidar[11]) + ")")
+        prolog.assertz("lidar(120, " + str(lidar[12]) + ")")
+        prolog.assertz("lidar(130, " + str(lidar[13]) + ")")
+        prolog.assertz("lidar(140, " + str(lidar[14]) + ")")
+        prolog.assertz("lidar(150, " + str(lidar[15]) + ")")
+        prolog.assertz("lidar(160, " + str(lidar[16]) + ")")
+        prolog.assertz("lidar(170, " + str(lidar[17]) + ")")
+
+        prolog.assertz("lidarmedia(sinistra, " + str(lidarm[0]) + ")")
+        prolog.assertz("lidarmedia(destra, " + str(lidarm[1]) + ")")
+
     # compass
     prolog.assertz("angle16(" + str(angle16) + ")")
     prolog.assertz("angle8(" + str(angle8) + ")")
@@ -230,10 +295,13 @@ def prologIA(commandolder, qrcode, fotocamera, switch, sonar, volt, lidar,
     ###################################################################################################################
 
     ##########################
-    # ESEQUZIONE DELLA QUERY #
+    # ESEQUZIONE DELLE QUERY #
     ##########################
 
-    result = list(prolog.query("command(Result)"))
+    if commandolder == 'attiva_lidar':
+        result = list(prolog.query("commandlidar(Result)"))
+    else:
+        result = list(prolog.query("command(Result)"))
 
     ###################################################################################################################
 
@@ -262,6 +330,35 @@ def prologIA(commandolder, qrcode, fotocamera, switch, sonar, volt, lidar,
 
     # volt
     prolog.retract("volt(" + str(volt) + ")")
+
+    ###########################################################
+    # DEMOLIZIONE DEI FATTI CARICATI PER L'UTILIZZO DEL LIDAR #
+    ###########################################################
+
+    if commandolder == 'attiva_lidar':
+
+        # lidar ogni 10 gradi
+        prolog.retract("lidar(0, " + str(lidar[0]) + ")")
+        prolog.retract("lidar(10, " + str(lidar[1]) + ")")
+        prolog.retract("lidar(20, " + str(lidar[2]) + ")")
+        prolog.retract("lidar(30, " + str(lidar[3]) + ")")
+        prolog.retract("lidar(40, " + str(lidar[4]) + ")")
+        prolog.retract("lidar(50, " + str(lidar[5]) + ")")
+        prolog.retract("lidar(60, " + str(lidar[6]) + ")")
+        prolog.retract("lidar(70, " + str(lidar[7]) + ")")
+        prolog.retract("lidar(80, " + str(lidar[8]) + ")")
+        prolog.retract("lidar(90, " + str(lidar[9]) + ")")
+        prolog.retract("lidar(100, " + str(lidar[10]) + ")")
+        prolog.retract("lidar(110, " + str(lidar[11]) + ")")
+        prolog.retract("lidar(120, " + str(lidar[12]) + ")")
+        prolog.retract("lidar(130, " + str(lidar[13]) + ")")
+        prolog.retract("lidar(140, " + str(lidar[14]) + ")")
+        prolog.retract("lidar(150, " + str(lidar[15]) + ")")
+        prolog.retract("lidar(160, " + str(lidar[16]) + ")")
+        prolog.retract("lidar(170, " + str(lidar[17]) + ")")
+
+        prolog.retract("lidarmedia(sinistra, " + str(lidarm[0]) + ")")
+        prolog.retract("lidarmedia(destra, " + str(lidarm[1]) + ")")
 
     # compass
     prolog.retract("angle16(" + str(angle16) + ")")
@@ -362,6 +459,9 @@ def main():
         if commandIA == '':
             if ifNotNone(qrcode, fotocamera, switch, sonar, volt, lidar,
                          angle16, angle8, pitch, roll, mag, acc, gyro, temp):
+                if commandolder == "attiva_lidar":
+                    lidarslit = np.split(lidar, [8])
+                    lidarm = [np.median(lidarslit[1]), np.median(lidarslit[0])]
 
                 if commandolder == "correggi_a_destra" or\
                         commandolder == "correggi_a_sinistra" or oldangle is None:
@@ -378,6 +478,8 @@ def main():
                 prolog_msg.risposta = commandIA[0]['Result']
                 prolog_pub.publish(prolog_msg)
                 rospy.loginfo(prolog_msg)
+                if commandolder =="attiva_lidar":
+                    time.sleep(5)
                 commandIA = ''
                 resetNone()
                 r.sleep()
