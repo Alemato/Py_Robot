@@ -225,7 +225,9 @@ def callback(msg):
 
     # attiva lidar
     elif msg.velo == "v":
-        forward(clientID, motors, 0)
+        backward(clientID, motors, 2)
+        time.sleep(0.5)
+        backward(clientID, motors, 0)
 
     else:
         forward(clientID, motors, 0)
