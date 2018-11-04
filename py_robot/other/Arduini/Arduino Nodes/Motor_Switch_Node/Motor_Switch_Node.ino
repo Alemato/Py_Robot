@@ -4,46 +4,39 @@
 #include <py_robot/Motor_Switch_Node.h>
 // custom message Controller_Node
 #include <py_robot/Controller_To_Motor_Node.h>
-// libreria motor driver
-#include <L298N.h>
 
 // handle nodon ROS
 ros::NodeHandle nh;
 
 // assegnamento pin motori 1 e 2
-#define AIN1 2
-#define AIN2 4
-#define PWMA 3
+#define SXPWM 3
+#define SXIN1 4
+#define SXIN2 5
 
 // assegnamento pin motori 3 e 4
-#define BIN1 5
-#define BIN2 7
-#define PWMB 6
+#define DXPWM 6
+#define DXIN1 7
+#define DXIN2 8
+
 
 // assegnamento pin switch
-#define switchFront 8
-#define switchLeft 9
-#define switchRight 10
-
-// definizioni delle funzioni legate ai due motor driver che gestiscono
-// rispettivamente i due motori di sinistra e due di destra
-L298N sinistra(PWMA, AIN1, AIN2, AIN1, AIN2, PWMA);
-L298N destra(PWMB, BIN1, BIN2, BIN1, BIN2, PWMB);
+#define switchFront 11
+#define switchLeft 10
+#define switchRight 9
 
 // variabili globali
-String velocita;
+String comando;
 char cmd[1];
 int vel;
-//int time_delay = 2000;
 
 //funzione callback
 // PARAM: messaggio ros velo
 
 void callback( const py_robot::Controller_To_Motor_Node& velo) {
   // assegnamento del comando impartito dal Nodo Controller
-  velocita = velo.velo;
+  comando = velo.velo;
   // conversione della da stringa ad array di char
-  velocita.toCharArray(cmd, 1);
+  comando.toCharArray(cmd, 1);
 
 }
 // funzione sottoscrizione di ros
@@ -55,17 +48,35 @@ py_robot::Motor_Switch_Node switches;
 // ros inizializzazione Pubblisher sonar_volt
 ros::Publisher switch_pub("switches", &switches);
 
+// funzione per switch
+// PARAM: switchpin
+// RETURN 0 se il lo switch non è attivato, 1 se è attivato
+
 void setup() {
   // inizializzazione nodo
   nh.initNode();
   nh.advertise(switch_pub);
   nh.subscribe(motor_sub);
 
-  //pin switch
+  // pin switch
   pinMode(switchFront, INPUT);
   pinMode(switchRight, INPUT);
   pinMode(switchLeft, INPUT);
+  // pin motori 1 e 2 di sinistra
+  pinMode(SXPWM, OUTPUT);
+  pinMode(SXIN1, OUTPUT);
+  pinMode(SXIN2, OUTPUT);
+  analogWrite(SXPWM, 0);
+ 
+  // pin motori 3 e 4 di destra
+  pinMode(DXPWM, OUTPUT);
+  pinMode(DXIN1, OUTPUT);
+  pinMode(DXIN2, OUTPUT);
+  analogWrite(DXPWM, 0);
+
+  delay(1000);
 }
+
 // funzione per switch
 // PARAM: switchpin
 // RETURN 0 se il lo switch non è attivato, 1 se è attivato
@@ -76,11 +87,6 @@ long switchsensor(int switchpin) {
     delay(20);
     // dopo 20 millisecondi controllo di nuovo se è ancora premuto per evitare errori
     if (digitalRead(switchpin) == HIGH) {
-      // procedura da attuare dopo che uno degli switch viene attivato
-      // stop
-      // VaiAvanti(0, 2000);
-      // indietro per ___ secondi
-      // VaiIndietro(80, 2000);
       // ritorna 0 se lo switch non è stato attivato
       return 0;
     }
@@ -93,114 +99,155 @@ long switchsensor(int switchpin) {
 
 // funzione Avanti
 // PARAM: intero vel: parametro velocità
-void VaiAvanti(int vel, int time_delay) {
-  // relativo al lato sinistro
-  sinistra.forward(vel, time_delay);
-  // relativo al lato destro
-  destra.forward(vel, time_delay);
+// PARAM: intero tempo: parametro tempo di esecuzione
+void vaiAvanti(int vel, int tempo) {
+  // relativo al motor drive collegato ai motori del lato sinistro
+  digitalWrite(SXIN1, 1);
+  digitalWrite(SXIN2, 0);
+  // velocità lato sinistro
+  analogWrite(SXPWM, vel);
+  // relativo al motor drive collegato ai motori del lato destro
+  digitalWrite(DXIN1, 1);
+  digitalWrite(DXIN2, 0);
+  // velocità lato destro
+  analogWrite(DXPWM, vel);
 
+  delay(tempo);
 }
+
 // funzione Indietro
 // PARAM: intero vel: parametro velocità
-void VaiIndietro(int vel, int time_delay) {
-  // relativo al motor drive collegato ai motori del lato sinistro con velocità ___ e tempo ___
-  sinistra.backward(vel, time_delay);
-  // relativo al motor drive collegato ai motori del lato destro con velocità ___ e tempo ___
-  destra.backward(vel, time_delay);
+// PARAM: intero tempo: parametro tempo di esecuzione
+void vaiIndietro(int vel, int tempo) {
+  // relativo al motor drive collegato ai motori del lato sinistro
+  digitalWrite(SXIN1, 0);
+  digitalWrite(SXIN2, 1);
+  // velocità lato sinistro
+  analogWrite(SXPWM, vel);
+  // relativo al motor drive collegato ai motori del lato destro
+  digitalWrite(DXIN1, 0);
+  digitalWrite(DXIN2, 1);
+  // velocità lato destro
+  analogWrite(DXPWM, vel);
+
+  delay(tempo);
+  fermo(0);
 }
 
 // funzione Sinistra
-void VaiSinistra() {
-  // relativo al motor drive collegato ai motori del lato sinistro con velocità ___ e tempo ___
-  sinistra.backward(100, 2000);
-  // relativo al motor drive collegato ai motori del lato destro con velocità ___ e tempo ___
-  destra.forward(100, 2000);
+// PARAM: intero vel: parametro velocità
+// PARAM: intero tempo: parametro tempo di esecuzione
+void vaiSinistra(int vel, int tempo) {
+  // relativo al motor drive collegato ai motori del lato sinistro
+  digitalWrite(SXIN1, 1);
+  digitalWrite(SXIN2, 0);
+  // velocità lato sinistro
+  analogWrite(SXPWM, vel);
+  // relativo al motor drive collegato ai motori del lato destro
+  digitalWrite(DXIN1, 0);
+  digitalWrite(DXIN2, 1);
+  // velocità lato destro
+  analogWrite(DXPWM, vel);
+
+  delay(tempo);
+  fermo(0);
 }
 
 // funzione Destra
-void VaiDestra() {
-  // relativo al motor drive collegato ai motori del lato sinistro con velocità ___ e tempo ___
-  sinistra.forward(100, 2000);
-  // relativo al motor drive collegato ai motori del lato destro con velocità ___ e tempo ___
-  destra.backward(100, 2000);
+// PARAM: intero vel: parametro velocità
+// PARAM: intero tempo: parametro tempo di esecuzione
+void vaiDestra(int vel, int tempo) {
+  // relativo al motor drive collegato ai motori del lato sinistro
+  digitalWrite(SXIN1, 0);
+  digitalWrite(SXIN2, 1);
+  // velocità lato sinistro
+  analogWrite(SXPWM, vel);
+  // relativo al motor drive collegato ai motori del lato destro
+  digitalWrite(DXIN1, 1);
+  digitalWrite(DXIN2, 0);
+  // velocità lato destro
+  analogWrite(DXPWM, vel);
+
+  delay(tempo);
+  fermo(0);
 }
 
-// funzione Correzione a sinistra
-void CorrezioneDestra() {
-  // relativo al motor drive collegato ai motori del lato sinistro con velocità ___ e tempo ___
-  sinistra.forward(100, 2000);
-  // relativo al motor drive collegato ai motori del lato destro con velocità ___ e tempo ___
-  destra.backward(100, 2000);
+// funzione Stop
+// PARAM: intero vel: parametro velocità
+// PARAM: intero tempo: parametro tempo di esecuzione
+void fermo(int tempo) {
+  // relativo al motor drive collegato ai motori del lato sinistro
+  digitalWrite(SXIN1, 0);
+  digitalWrite(SXIN2, 0);
+  // velocità lato sinistro
+  analogWrite(SXPWM, 0);
+  // relativo al motor drive collegato ai motori del lato destro
+  digitalWrite(DXIN1, 0);
+  digitalWrite(DXIN2, 0);
+  // velocità lato destro
+  analogWrite(DXPWM, 0);
+  
+  delay(tempo);
 }
 
-// funzione Correzione a destra
-void CorrezioneSinistra() {
-  // relativo al motor drive collegato ai motori del lato sinistro con velocità ___ e tempo ___
-  sinistra.forward(100, 2000);
-  // relativo al motor drive collegato ai motori del lato destro con velocità ___ e tempo ___
-  destra.backward(100, 2000);
-}
 
 void loop() {
 
   //switch case con i varin casi possibili dei comandi ricevuti dal Nodo Controller
   switch (cmd[0]) {
 
-    case 'a': VaiAvanti(70, 2000);
+    case 'a': vaiAvanti(70, 2000);
       break;
 
-    case 'b': VaiAvanti(90, 2000);
+    case 'b': vaiAvanti(90, 2000);
       break;
 
-    case 'c': VaiAvanti(110, 2000);
+    case 'c': vaiAvanti(110, 2000);
       break;
 
-    case 'd': VaiAvanti(130, 2000);
+    case 'd': vaiAvanti(130, 2000);
       break;
 
-    case 'e': VaiAvanti(150, 2000);
+    case 'e': vaiAvanti(150, 2000);
       break;
 
-    case 'f': VaiAvanti(170, 2000);
+    case 'f': vaiAvanti(170, 2000);
       break;
 
-    case 'g': VaiAvanti(190, 2000);
+    case 'g': vaiAvanti(190, 2000);
       break;
 
-    case 'h': VaiAvanti(210, 2000);
+    case 'h': vaiAvanti(210, 2000);
       break;
 
-    case 'i': VaiIndietro(80, 2000);
+    case 'i': vaiIndietro(80, 2000);
       break;
 
-    case 'l': VaiIndietro(100, 2000);
+    case 'l': vaiIndietro(100, 2000);
       break;
 
-    case 'm': VaiIndietro(150, 2000);
+    case 'm': vaiIndietro(150, 2000);
       break;
 
-    case 'o': VaiIndietro(180, 2000);
+    case 'o': vaiIndietro(180, 2000);
       break;
 
-    case 'p': VaiIndietro(210, 2000);
+    case 'p': vaiIndietro(210, 2000);
       break;
 
-    case 'q': VaiSinistra();
+    case 'q': vaiSinistra(100, 2000);
       break;
 
-    case 'r': VaiDestra();
+    case 'r': vaiDestra(100, 2000);
       break;
 
-    case 's': VaiAvanti(0, 2000);
+    case 's': fermo(0);
       break;
 
-    case 't': CorrezioneSinistra();
+    case 't': vaiSinistra(100, 500);        // correzione a sinistra
       break;
 
-    case 'u': CorrezioneDestra();
-      break;
-
-    case 'v': VaiAvanti(0, 2000);    //stop per attivazione lidar
+    case 'u': vaiDestra(100, 500);          // correzione a destra
       break;
   }
 
@@ -213,16 +260,16 @@ void loop() {
   // assegnamento valore, 0 o 1, dello switch Destro nella terza posizione dell'array switches,
   // prima variabile del custom message Motor_Switch_Node
   switches.switches[2] = switchsensor(switchRight);
-  // funzione Publish ROS 
+  // funzione Publish ROS
   switch_pub.publish(&switches);
-      // procedura da attuare dopo che uno degli switch viene attivato
-  if(switches.switches[0] == 0 || switches.switches[1] == 0 || switches.switches[2] == 0){
+  // procedura da attuare dopo che uno degli switch viene attivato
+  if (switches.switches[0] == 0 || switches.switches[1] == 0 || switches.switches[2] == 0) {
     // stop
-    VaiAvanti(0, 2000);
+    fermo(0);
     // indietro per ___ secondi
-    VaiIndietro(80, 2000);
+    vaiIndietro(80, 2000);
   }
-  // attesa eventi ROS 
+  // attesa eventi ROS
   nh.spinOnce();
   delay(10);
 }

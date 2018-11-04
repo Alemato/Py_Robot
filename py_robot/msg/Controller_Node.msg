@@ -1,10 +1,8 @@
-bool on_off_lidar
 int8 qrcode
 string fotocamera
 bool[3] switches
 float64[3] sonar
 float32 volt
-float32[18] lidar
 int16 angle16
 int8 angle8
 int16 pitch
