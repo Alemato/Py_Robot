@@ -1,4 +1,3 @@
-float32[18] lidar
 int16 angle16
 int8 angle8
 int16 pitch
