@@ -248,13 +248,6 @@ def main():
             if risposta_prolog == 'attiva_lidar' and backflag:  # messaggio per il Nodo  Compass_Servo_Lidar
                 controller_to_lidar_msg.on_off_lidar = True
                 backflag = False
-                print ("---------------------------------------------")
-                print ("---------------------------------------------")
-                print ("---------------------------------------------")
-                print ("attiva")
-                print ("---------------------------------------------")
-                print ("---------------------------------------------")
-                print ("---------------------------------------------")
 
             if comando is not None:
                 controller_to_motor_msg.velo = comando  # messaggio per il nodo Motor_Switch per Motor
