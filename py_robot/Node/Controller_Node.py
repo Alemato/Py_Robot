@@ -5,6 +5,7 @@ import roslaunch.parent
 import roslaunch
 import py_robot.msg as PyRobot
 import time
+import os
 
 controller_msg = PyRobot.Controller_Node()
 controller_to_motor_msg = PyRobot.Controller_To_Motor_Node()
@@ -92,10 +93,11 @@ def startfunction():
     Funzione di inizio programma. Si occupa di far partire i nodi
     :return: nulla
     """
+    path = os.getcwd()
     uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
     roslaunch.configure_logging(uuid)
     launch = roslaunch.parent.ROSLaunchParent(uuid, [
-        "../launch/node_launcher.launch"])  # qui da aggiornare con il path del file launch
+         path +"/catkin_ws/src/py_robot/launch/node_launcher.launch"])  # qui da aggiornare con il path del file launch
     launch.start()
     rospy.loginfo("started")
 
