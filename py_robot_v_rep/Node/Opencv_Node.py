@@ -124,13 +124,16 @@ def main():
         pi_camera_pub.publish(pi_camera_msg)
         rospy.loginfo(pi_camera_msg)
         r.sleep()
-    # while (1):
-    #     cv2.imshow('img', img)
-    #     cv2.imshow('ris', ris)
-    #     cv2.imshow('ris1', ris1)
-    #     k = cv2.waitKey(5) & 0xFF
-    #     if k == 27:
-    #         break
+        ########################
+        # Visualizzazione imgs #
+        ########################
+        # while (1):
+        #     cv2.imshow('img', img)
+        #     cv2.imshow('ris', ris)
+        #     cv2.imshow('ris1', ris1)
+        #     k = cv2.waitKey(5) & 0xFF
+        #     if k == 27:
+        #         break
 
 
 if __name__ == '__main__':
