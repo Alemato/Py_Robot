@@ -1,3 +1,7 @@
+% programma generale prolog
+
+
+
 fotocamera(centro).
 
 % qrcode 0 per false 1 per true
