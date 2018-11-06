@@ -29,7 +29,6 @@ Una volta travto tale QR Code il Rover accendera il led della OpenMV Camera.
 * 1x Set 6 viti e dadi 6 X 50 mm [(acquistato dal gruppo)](https://www.leroymerlin.it/catalogo/bullone-testa-bombata-m6-x-50-mm-34445726-p?gclid=Cj0KCQiAlIXfBRCpARIsAKvManxFwbnbfdylts2BuHVImZX7GndCMJnq7RmF7LeRsAEqB0qyiCXRvHUaAoRLEALw_wcB)
 * 1x Set 20 dadi 6 mm [(acquistato dal gruppo)](https://www.leroymerlin.it/catalogo/dado-autobloccante--m6-35746193-p?gclid=Cj0KCQiAlIXfBRCpARIsAKvManxTQPTG5XGKhWoKxlfpq0MXHgLS1shyihVZla3xUCn0OIvXjLxpkvcaAiuMEALw_wcB)
 * 1x Set 30 viti e dadi [(acquistato dal gruppo)](https://www.weldom.fr/weldom/boulon-6-pans-6-8-3x10-acier-zingue-sac-30-1093856.html)
-* 1x 
 
 # Specifiche Software
 
@@ -51,6 +50,6 @@ Data la scarsa precisone nel rilevare gli ostacoli sottili, ad esempio un piede 
 
 >
 py_robot: cartella pricipale che contiene tutto il progetto del rover fisico
->>
+>
 py_robot_v_rep: cartella che contiene tutto il progetto in versione v-rep
->>
+>
