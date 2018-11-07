@@ -7,18 +7,17 @@ controller_to_motor_msg = PyRobot.Controller_To_Motor_Node()
 
 
 def main():
-    # lista comandi da impartire al  nodo Motor_Switch_Node
-    comando1 = ["a", "b", "c", "d", "e", "f", "g", "h", "g", "f", "e", "d", "c", "b", "a", "t", "d", "a", "b", "c", "d",
-                "e", "f", "g", "h", "g", "f", "e", "d", "c", "b", "a"]
-    comando = ["a", "b", "c", "d"]
-
+    # lista comandi da impartire al  nodo Motor_Switch_Node"a", "b", "c", "d", "c", "c", "a",
+    comando = ["a", "b", "c", "d", "c", "b", "a", "s", "o", "a", "b", "c", "d", "c", "b", "a", "s", "p", "b", "r", "l",
+               "b", "f", "b", "g", "b", "h", "b", "p"]
     # lista dei tempi di funzionamento rispettivi per ogni comando
-    tempi = [5, 2, 3, 4]
+    tempi = [4, 2, 2, 2, 2, 2, 2, 1, 1, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1,
+             1, 0.01, 1, 0.01, 1, 2, 1, 1]
     rospy.init_node("Controller_Node", disable_signals=True)
     controller_to_motor_pub = rospy.Publisher("controller_To_Motor", PyRobot.Controller_To_Motor_Node, queue_size=1)
     time.sleep(1)
     r = rospy.Rate(1)
-    for idx, x in comando:
+    for idx, x in enumerate(comando):
         controller_to_motor_msg.velo = x  # Scrittura del comando preso dalla lista comando con indice progressivo
         rospy.loginfo(controller_to_motor_msg)
         controller_to_motor_pub.publish(controller_to_motor_msg)  # pub nel topic
