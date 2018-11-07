@@ -2,8 +2,7 @@
 #include <ros.h>
 // custom message Compass_Node
 #include <py_robot/Compass_Node.h>
-// libreria Servo Motore
-#include <Servo.h>
+
 // libreria seriale di comunicazione con il Compass
 #include <SoftwareSerial.h>
 
@@ -23,9 +22,6 @@ ros::NodeHandle nh;
 #define CMPS_GET_ACCEL_RAW 0x20
 #define CMPS_GET_GYRO_RAW 0x21
 #define CMPS_GET_TEMP_RAW 0x22
-
-// Servo
-Servo myservo;
 
 // Compass
 SoftwareSerial cmps11 = SoftwareSerial(compassTX, compassRX);
@@ -51,7 +47,7 @@ void setup() {
 
 void readcompass() {
   // variabili d'appoggio usate per calcolare gli angolazione a 8 bit e a 16 bit
-  unsigned char high_byte, low_byte, angle8 ;
+  unsigned char high_byte, low_byte;
   unsigned int angle16;
 
   // richiesta e lettura dell'angolo a 16 bit
@@ -83,48 +79,6 @@ void readcompass() {
   while (cmps11.available() < 1);
   //assegnamento del valore nella variabile roll del custom message compass
   compass_msg.roll = (int)cmps11.read();
-
-  //richiesta e lettura dei valori del magnetometro
-  cmps11.write(CMPS_GET_MAG_RAW);
-  while (cmps11.available() < 6);
-  //assegnamento dei valori 6 nella variabile array mag del custom message compass
-  compass_msg.mag[0] = (int)cmps11.read();
-  compass_msg.mag[1] = (int)cmps11.read();
-  compass_msg.mag[2] = (int)cmps11.read();
-  compass_msg.mag[3] = (int)cmps11.read();
-  compass_msg.mag[4] = (int)cmps11.read();
-  compass_msg.mag[5] = (int)cmps11.read();
-
-  //richiesta e lettura dei valori dell'accelerometro
-  cmps11.write(CMPS_GET_ACCEL_RAW);
-  while (cmps11.available() < 6);
-  //assegnamento dei 6 valori nella variabile array acc del custom message compass
-  compass_msg.acc[0] = (int)cmps11.read();
-  compass_msg.acc[1] = (int)cmps11.read();
-  compass_msg.acc[2] = (int)cmps11.read();
-  compass_msg.acc[3] = (int)cmps11.read();
-  compass_msg.acc[4] = (int)cmps11.read();
-  compass_msg.acc[5] = (int)cmps11.read();
-
-  //richiesta e lettura dei valori del giroscopio
-  cmps11.write(CMPS_GET_GYRO_RAW);
-  while (cmps11.available() < 6)
-    //assegnamento dei 6 valori nella variabile array gyro del custom message compass;
-  compass_msg.gyro[0] = (int)cmps11.read();
-  compass_msg.gyro[1] = (int)cmps11.read();
-  compass_msg.gyro[2] = (int)cmps11.read();
-  compass_msg.gyro[3] = (int)cmps11.read();
-  compass_msg.gyro[4] = (int)cmps11.read();
-  compass_msg.gyro[5] = (int)cmps11.read();
-
-  //richiesta e lettura dei valori del termometro
-  cmps11.write(CMPS_GET_TEMP_RAW);
-  while (cmps11.available() < 2);
-  //assegnamento dei 2 valori nella variabile array temp del custom message compass;
-  compass_msg.temp = (int)cmps11.read();
-  compass_msg.temp = (int)cmps11.read();
-
-  delay(100);
 }
 
 void loop() {
