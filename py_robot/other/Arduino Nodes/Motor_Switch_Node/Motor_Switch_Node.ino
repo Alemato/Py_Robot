@@ -26,7 +26,6 @@ ros::NodeHandle nh;
 
 // variabili globali
 String comando;
-char cmd[1];
 int vel;
 
 //funzione callback
@@ -35,8 +34,6 @@ int vel;
 void callback( const py_robot::Controller_To_Motor_Node& velo) {
   // assegnamento del comando impartito dal Nodo Controller
   comando = velo.velo;
-  // conversione della da stringa ad array di char
-  comando.toCharArray(cmd, 1);
 
 }
 // funzione sottoscrizione di ros
@@ -120,6 +117,7 @@ void vaiAvanti(int vel, int tempo) {
 // PARAM: intero tempo: parametro tempo di esecuzione
 void vaiIndietro(int vel, int tempo) {
   // relativo al motor drive collegato ai motori del lato sinistro
+  fermo(0);
   digitalWrite(SXIN1, 0);
   digitalWrite(SXIN2, 1);
   // velocità lato sinistro
@@ -151,6 +149,7 @@ void vaiSinistra(int vel, int tempo) {
 
   delay(tempo);
   fermo(0);
+  comando = "s";
 }
 
 // funzione Destra
@@ -170,6 +169,7 @@ void vaiDestra(int vel, int tempo) {
 
   delay(tempo);
   fermo(0);
+  comando = "s";
 }
 
 // funzione Stop
@@ -194,61 +194,50 @@ void fermo(int tempo) {
 void loop() {
 
   //switch case con i varin casi possibili dei comandi ricevuti dal Nodo Controller
-  switch (cmd[0]) {
+  switch (comando[0]) {
 
-    case 'a': vaiAvanti(70, 2000);
+    case 'a': vaiAvanti(100, 50);
       break;
 
-    case 'b': vaiAvanti(90, 2000);
+    case 'b': vaiAvanti(150, 50);
       break;
 
-    case 'c': vaiAvanti(110, 2000);
+    case 'c': vaiAvanti(200, 50);
       break;
 
-    case 'd': vaiAvanti(130, 2000);
+    case 'd': vaiAvanti(255, 50);
       break;
 
-    case 'e': vaiAvanti(150, 2000);
+    case 'e': vaiIndietro(150, 50);
       break;
 
-    case 'f': vaiAvanti(170, 2000);
+    case 'l': vaiSinistra(150, 50);
       break;
 
-    case 'g': vaiAvanti(190, 2000);
+    case 'r': vaiDestra(150, 50);
       break;
 
-    case 'h': vaiAvanti(210, 2000);
+    case 'f': vaiSinistra(210, 50);   // correzione sinistra
       break;
 
-    case 'i': vaiIndietro(80, 2000);
+    case 'g': vaiDestra(100, 50);    // correzione destra
       break;
 
-    case 'l': vaiIndietro(100, 2000);
+    case 'h': vaiDestra(150, 1000);   //360 orario
       break;
 
-    case 'm': vaiIndietro(150, 2000);
+    case 'i': vaiSinistra(150, 1000);  // 360 antiorario
       break;
 
-    case 'o': vaiIndietro(180, 2000);
+    case 'm': vaiDestra(150, 2000);   // 90° a destra
       break;
 
-    case 'p': vaiIndietro(210, 2000);
-      break;
-
-    case 'q': vaiSinistra(100, 2000);
-      break;
-
-    case 'r': vaiDestra(100, 2000);
+    case 'n': vaiIndietro(210, 2000); // 90° a sinistra
       break;
 
     case 's': fermo(0);
       break;
 
-    case 't': vaiSinistra(100, 500);        // correzione a sinistra
-      break;
-
-    case 'u': vaiDestra(100, 500);          // correzione a destra
-      break;
   }
 
   // assegnamento valore, 0 o 1, dello switch centrale nella prima posizione dell'array switches,
