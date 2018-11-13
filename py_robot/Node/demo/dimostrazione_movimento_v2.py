@@ -8,6 +8,8 @@ controller_to_motor_msg = PyRobot.Controller_To_Motor_Node()
 
 def main():
     # lista comandi da impartire al  nodo Motor_Switch_Node"a", "b", "c", "d", "c", "c", "a",
+    comando1 = ["a", "b", "c", "d", "c", "b", "a", "s", "o", "a", "b", "c", "d", "c", "b", "a", "s", "p", "b", "r", "l",
+                "b", "f", "b", "g", "b", "h", "b", "p"]
     comando = ["a", "b", "c", "d", "c", "b", "a", "s", "o", "a", "b", "c", "d", "c", "b", "a", "s", "p", "b", "r", "l",
                "b", "f", "b", "g", "b", "h", "b", "p"]
     # lista dei tempi di funzionamento rispettivi per ogni comando
