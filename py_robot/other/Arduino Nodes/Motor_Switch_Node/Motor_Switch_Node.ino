@@ -64,7 +64,7 @@ void setup() {
   pinMode(SXIN1, OUTPUT);
   pinMode(SXIN2, OUTPUT);
   analogWrite(SXPWM, 0);
- 
+
   // pin motori 3 e 4 di destra
   pinMode(DXPWM, OUTPUT);
   pinMode(DXIN1, OUTPUT);
@@ -135,7 +135,7 @@ void vaiIndietro(int vel, int tempo) {
 // funzione Sinistra
 // PARAM: intero vel: parametro velocità
 // PARAM: intero tempo: parametro tempo di esecuzione
-void vaiSinistra(int vel, int tempo) {
+void vaiDestra(int vel, int tempo) {
   // relativo al motor drive collegato ai motori del lato sinistro
   digitalWrite(SXIN1, 1);
   digitalWrite(SXIN2, 0);
@@ -155,7 +155,7 @@ void vaiSinistra(int vel, int tempo) {
 // funzione Destra
 // PARAM: intero vel: parametro velocità
 // PARAM: intero tempo: parametro tempo di esecuzione
-void vaiDestra(int vel, int tempo) {
+void vaiSinistra(int vel, int tempo) {
   // relativo al motor drive collegato ai motori del lato sinistro
   digitalWrite(SXIN1, 0);
   digitalWrite(SXIN2, 1);
@@ -186,7 +186,7 @@ void fermo(int tempo) {
   digitalWrite(DXIN2, 0);
   // velocità lato destro
   analogWrite(DXPWM, 0);
-  
+
   delay(tempo);
 }
 
@@ -211,29 +211,37 @@ void loop() {
     case 'e': vaiIndietro(150, 50);
       break;
 
-    case 'l': vaiSinistra(150, 50);
+    case 'l': vaiSinistra(255, 200);
       break;
 
-    case 'r': vaiDestra(150, 50);
+    case 'r': vaiDestra(255, 200);
       break;
 
-    case 'f': vaiSinistra(210, 50);   // correzione sinistra
+    case 'f': vaiSinistra(255, 50);   // correzione sinistra
       break;
 
-    case 'g': vaiDestra(100, 50);    // correzione destra
+    case 'g': vaiDestra(255, 50);    // correzione destra
       break;
 
-    case 'h': vaiDestra(150, 1000);   //360 orario
+    case 'h': vaiSinistra(255, 2100);  // 360 antiorario
       break;
 
-    case 'i': vaiSinistra(150, 1000);  // 360 antiorario
+    case 'i': vaiDestra(255, 2100);   //360 orario
       break;
 
-    case 'm': vaiDestra(150, 2000);   // 90° a destra
+    case 'm': vaiSinistra(255, 800); // 90° a sinistra
       break;
 
-    case 'n': vaiIndietro(210, 2000); // 90° a sinistra
+    case 'n': vaiDestra(255, 800);   // 90° a destra
       break;
+
+    case 'o': vaiSinistra(255, 1200); // 180° a sinistra
+      break;
+
+    case 'p': vaiDestra(255, 1200);   // 180° a destra
+      break;
+
+
 
     case 's': fermo(0);
       break;
@@ -256,10 +264,9 @@ void loop() {
     // stop
     fermo(0);
     // indietro per ___ secondi
-    vaiIndietro(80, 2000);
+    vaiIndietro(150, 2000);
   }
   // attesa eventi ROS
   nh.spinOnce();
   delay(10);
 }
-
